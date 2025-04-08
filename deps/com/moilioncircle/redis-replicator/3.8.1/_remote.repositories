@@ -1,0 +1,4 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Tue Apr 08 19:02:43 IDT 2025
+redis-replicator-3.8.1.jar>=
+redis-replicator-3.8.1.pom>=

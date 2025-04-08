@@ -16,8 +16,8 @@
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.moilioncircle</groupId>
@@ -66,6 +66,14 @@
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>project.local</id>
+            <name>project</name>
+            <url>file:${project.basedir}/deps</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>com.moilioncircle</groupId>
@@ -78,6 +86,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
         <dependency>
             <groupId>com.moilioncircle</groupId>
             <artifactId>redis-rdb-cli-api</artifactId>
@@ -138,7 +147,7 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    
+
     <profiles>
         <profile>
             <id>static</id>
@@ -179,7 +188,8 @@
                             <prefix>git</prefix>
                             <verbose>false</verbose>
                             <generateGitPropertiesFile>true</generateGitPropertiesFile>
-                            <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties
+                            <generateGitPropertiesFilename>
+                                ${project.build.outputDirectory}/git.properties
                             </generateGitPropertiesFilename>
                             <format>properties</format>
                             <gitDescribe>
@@ -278,7 +288,8 @@
                             <prefix>git</prefix>
                             <verbose>false</verbose>
                             <generateGitPropertiesFile>true</generateGitPropertiesFile>
-                            <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties
+                            <generateGitPropertiesFilename>
+                                ${project.build.outputDirectory}/git.properties
                             </generateGitPropertiesFilename>
                             <format>properties</format>
                             <gitDescribe>
