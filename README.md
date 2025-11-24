@@ -56,6 +56,11 @@ $ cd ./target/redis-rdb-cli-release/redis-rdb-cli/bin/rct -h
 $ docker run -it --rm redisrdbcli/redis-rdb-cli:latest
 $ rct -V
 ```
+
+## Windows Environment Variables
+  
+To run the commands from any directory, add the `/path/to/redis-rdb-cli/bin` directory to your system's `Path` environment variable.
+  
   
 ## Usage
 
