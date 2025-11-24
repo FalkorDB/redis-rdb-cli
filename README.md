@@ -31,8 +31,7 @@ JDK 1.8 or later
 ```shell
 $ wget https://github.com/leonchen83/redis-rdb-cli/releases/download/${version}/redis-rdb-cli-release.zip
 $ unzip redis-rdb-cli-release.zip
-$ cd ./redis-rdb-cli/bin
-$ ./rct -h
+$ ./redis-rdb-cli/bin/rct -h
 ```
 
 ## Compiling from Source
@@ -48,8 +47,7 @@ Maven 3.3.1 or later
 $ git clone https://github.com/leonchen83/redis-rdb-cli.git
 $ cd redis-rdb-cli
 $ mvn clean install -Dmaven.test.skip=true
-$ cd target/redis-rdb-cli-release/redis-rdb-cli/bin
-$ ./rct -h 
+$ cd ./target/redis-rdb-cli-release/redis-rdb-cli/bin/rct -h 
 ```
 
 ## Running with Docker
