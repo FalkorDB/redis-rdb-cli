@@ -29,7 +29,7 @@ JDK 1.8 or later
 ## Installation
 
 ```shell
-$ wget https://github.com/leonchen83/redis-rdb-cli/releases/download/${version}/redis-rdb-cli-release.zip
+$ wget https://github.com/leonchen83/redis-rdb-cli/releases/latest/download/redis-rdb-cli-release.zip
 $ unzip redis-rdb-cli-release.zip
 $ cd ./redis-rdb-cli/bin
 $ ./rct -h
