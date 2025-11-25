@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v4
       - name: Create Tag
         run: |
           echo "RELEASE_TAG=`cat ./src/main/resources/.version`" >> $GITHUB_ENV
