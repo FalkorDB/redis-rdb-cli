@@ -1,3 +1,7 @@
+### 0.9.9
+
+Fix script execution failure when running from parent directories.  
+
 ### 0.9.8
 
 Add support for redis 8.2.  

@@ -47,7 +47,7 @@ Maven 3.3.1 or later
 $ git clone https://github.com/leonchen83/redis-rdb-cli.git
 $ cd redis-rdb-cli
 $ mvn clean install -Dmaven.test.skip=true
-$ cd ./target/redis-rdb-cli-release/redis-rdb-cli/bin/rct -h 
+$ ./target/redis-rdb-cli-release/redis-rdb-cli/bin/rct -h 
 ```
 
 ## Running with Docker
@@ -579,8 +579,8 @@ $ rct -f test -s redis://127.0.0.1:6379 -o ./out.csv -t string -d 0 -e json
 * [Anish Karandikar](https://github.com/anishkny)
 * [Air](https://github.com/air3ijai)
 * [Raghu Nandan B S](https://github.com/raghu-nandan-bs)
-* Special thanks to [Kater Technologies](https://www.kater.com/)
-  
+* [Mads Nedergaard](https://github.com/madsnedergaard)
+
 ## Consulting
 
 Commercial support for `redis-rdb-cli` is available. The following services are currently offered:

@@ -29,10 +29,9 @@ jdk 1.8+
 ## 安装
 
 ```shell
-$ wget https://github.com/leonchen83/redis-rdb-cli/releases/download/${version}/redis-rdb-cli-release.zip
+$ wget https://github.com/leonchen83/redis-rdb-cli/releases/latest/download/redis-rdb-cli-release.zip
 $ unzip redis-rdb-cli-release.zip
-$ cd ./redis-rdb-cli/bin
-$ ./rct -h
+$ ./redis-rdb-cli/bin/rct -h
 ```
 
 ## 手动编译依赖
@@ -50,8 +49,7 @@ maven-3.3.1+
 $ git clone https://github.com/leonchen83/redis-rdb-cli.git
 $ cd redis-rdb-cli
 $ mvn clean install -Dmaven.test.skip=true
-$ cd target/redis-rdb-cli-release/redis-rdb-cli/bin
-$ ./rct -h 
+$ ./target/redis-rdb-cli-release/redis-rdb-cli/bin/rct -h 
 ```
 
 ## 在docker中运行
@@ -70,10 +68,8 @@ $ rct -V
 ### Redis大量数据插入
 
 ```shell
-
 $ rct -f dump -s /path/to/dump.rdb -o /path/to/dump.aof -r
 $ cat /path/to/dump.aof | /redis/src/redis-cli -p 6379 --pipe
-
 ```
 
 ### 把rdb转换成dump格式
@@ -141,7 +137,6 @@ $ rmt -s /path/to/dump.rdb -m redis://192.168.1.105:6379 -r
 ### 降级迁移
 
 ```shell
-
 # 同步 redis-7 的数据到 redis-6
 # 关于参数 dump_rdb_version 请查看 redis-rdb-cli.conf 的相关注释
 $ sed -i 's/dump_rdb_version=-1/dump_rdb_version=9/g' /path/to/redis-rdb-cli/conf/redis-rdb-cli.conf
@@ -150,7 +145,6 @@ $ rmt -s redis://com.redis7:6379 -m redis://com.redis6:6379 -r
 
 ### 在同步过程中处理大key
 ```shell
-
 # 在目标redis中设置 proto-max-bulk-len 合适的值
 $ redis-cli -h ${host} -p 6380 -a ${pwd} config set proto-max-bulk-len 2048mb
 
@@ -159,7 +153,6 @@ $ export JAVA_TOOL_OPTIONS="-Xms8g -Xmx8g"
 
 # 执行迁移
 $ rmt -s redis://127.0.0.1:6379 -m redis://127.0.0.1:6380 -r
-
 ```
 
 ### 同步rdb到远端redis集群
@@ -222,7 +215,6 @@ $ rcut -s ./aof-use-rdb-preamble.aof -r ./dump.rdb -a ./appendonly.aof
 举例如下:  
 
 ```shell
-
 $ rct -f dump -s /path/to/dump.rdb -o /path/to/dump.aof -d 0
 $ rct -f dump -s /path/to/dump.rdb -o /path/to/dump.aof -t string hash
 $ rmt -s /path/to/dump.rdb -m redis://192.168.1.105:6379 -r -d 0 1 -t list
@@ -288,12 +280,10 @@ $ docker-compose down
 1. 用 openssl 生成 keystore
   
 ```shell
-
 $ cd /path/to/redis-6.0-rc1
 $ ./utils/gen-test-certs.sh
 $ cd tests/tls
 $ openssl pkcs12 -export -CAfile ca.crt -in redis.crt -inkey redis.key -out redis.p12
-
 ```
   
 2. 如果源 redis 和目标 redis 使用同样的 keystore. 那么配置如下参数  
@@ -422,8 +412,7 @@ migrate_flush=yes
 
 1. 使用如下maven pom.xml文件创建一个Java工程
 
-```xml  
-
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -584,8 +573,7 @@ $ ret -s redis://127.0.0.1:6379 -c config.conf -n your-sink-service
 
 1. 创建class `YourFormatterService` 继承 `AbstractFormatterService`  
 
-```java  
-
+```java
 public class YourFormatterService extends AbstractFormatterService {
 
     @Override
@@ -602,7 +590,6 @@ public class YourFormatterService extends AbstractFormatterService {
         return context;
     }
 }
-
 ```
 
 2. 使用Java SPI来注册这个实现类  
@@ -635,7 +622,6 @@ $ cp ./target/your-service-1.0.0-jar-with-dependencies.jar /path/to/redis-rdb-cl
 4. 运行formatter服务
 
 ```shell
-
 $ rct -f test -s redis://127.0.0.1:6379 -o ./out.csv -t string -d 0 -e json
 ```
 
@@ -647,7 +633,7 @@ $ rct -f test -s redis://127.0.0.1:6379 -o ./out.csv -t string -d 0 -e json
 * [Anish Karandikar](https://github.com/anishkny)
 * [Air](https://github.com/air3ijai)
 * [Raghu Nandan B S](https://github.com/raghu-nandan-bs)
-* 特别感谢[Kater Technologies](https://www.kater.com/)
+* [Mads Nedergaard](https://github.com/madsnedergaard)
 
 # 商业咨询
 
