@@ -1,6 +1,7 @@
 ### 0.9.9
 
 Fix script execution failure when running from parent directories.  
+Chore: enable multi-platform Docker builds via buildx.  
 
 ### 0.9.8
 
