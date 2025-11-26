@@ -21,16 +21,19 @@ if [[ "$_java" ]]; then
 fi
 
 # Resolve script directory, handling symlinks
-SCRIPT_PATH="$0"
-while [ -L "$SCRIPT_PATH" ]; do
-    SCRIPT_PATH=$(readlink "$SCRIPT_PATH")
-    # If relative symlink, resolve relative to original dir
-    if [[ "$SCRIPT_PATH" != /* ]]; then
-        SCRIPT_PATH="$( cd "$( dirname "$0" )" >/dev/null 2>&1 && pwd )/$SCRIPT_PATH"
-    fi
+PRG="$0"
+while [ -L "$PRG" ]; do
+  ls=$(ls -ld "$PRG")
+  link=$(expr "$ls" : '.*-> \(.*\)$')
+  if expr "$link" : '/.*' > /dev/null; then
+    PRG="$link"
+  else
+    PRG="$(dirname "$PRG")/$link"
+  fi
 done
-SCRIPT_DIR="$( cd "$( dirname "$SCRIPT_PATH" )" >/dev/null 2>&1 && pwd )"
-base_dir="$SCRIPT_DIR/.."
+
+SCRIPT_DIR="$(cd "$(dirname "$PRG")" >/dev/null 2>&1 && pwd)"
+base_dir="$(cd "$SCRIPT_DIR/.." >/dev/null 2>&1 && pwd)"
 
 case "$(uname -s)" in
   *CYGWIN*) base_dir=`cygpath -w "$base_dir"`;;
