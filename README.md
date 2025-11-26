@@ -32,6 +32,11 @@ JDK 1.8 or later
 $ wget https://github.com/leonchen83/redis-rdb-cli/releases/latest/download/redis-rdb-cli-release.zip
 $ unzip redis-rdb-cli-release.zip
 $ ./redis-rdb-cli/bin/rct -h
+
+# MacOS homebrew installation
+$ brew tap leonchen83/redis-rdb-cli
+$ brew install redis-rdb-cli
+$ rct -h
 ```
 
 ## Compiling from Source

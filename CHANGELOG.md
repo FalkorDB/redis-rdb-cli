@@ -1,5 +1,6 @@
 ### 0.9.9
 
+Fix script Make Homebrew and symlink friendly
 Fix script execution failure when running from parent directories.  
 Chore: enable multi-platform Docker builds via buildx.  
 
