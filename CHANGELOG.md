@@ -1,3 +1,8 @@
+### 0.9.10
+
+Support for redis 8.4.  
+Support for Java 25.  
+
 ### 0.9.9
 
 Fix script Make Homebrew and symlink friendly

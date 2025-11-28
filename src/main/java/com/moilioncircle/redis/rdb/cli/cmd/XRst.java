@@ -79,6 +79,7 @@ import com.moilioncircle.redis.replicator.cmd.parser.LPushXParser;
 import com.moilioncircle.redis.replicator.cmd.parser.LRemParser;
 import com.moilioncircle.redis.replicator.cmd.parser.LSetParser;
 import com.moilioncircle.redis.replicator.cmd.parser.LTrimParser;
+import com.moilioncircle.redis.replicator.cmd.parser.MSetExParser;
 import com.moilioncircle.redis.replicator.cmd.parser.MSetNxParser;
 import com.moilioncircle.redis.replicator.cmd.parser.MSetParser;
 import com.moilioncircle.redis.replicator.cmd.parser.MoveParser;
@@ -366,6 +367,8 @@ public class XRst implements Callable<Integer> {
 		// since redis 8.2
 		replicator.addCommandParser(CommandName.name("XACKDEL"), new CombineCommandParser(new XAckDelParser()));
 		replicator.addCommandParser(CommandName.name("XDELEX"), new CombineCommandParser(new XDelExParser()));
+		// since redis 8.4
+		replicator.addCommandParser(CommandName.name("MSETEX"), new CombineCommandParser(new MSetExParser()));
 		return replicator;
 	}
 }

@@ -43,7 +43,6 @@ public class CountRdbVisitor extends AbstractRctRdbVisitor implements EventListe
 
     private Map<String, Long> counter = new HashMap<>();
     
-    //noinspection ThisEscapedInObjectConstruction
     public CountRdbVisitor(Replicator replicator, Configure configure, Args.RctArgs args, Escaper escaper) {
         super(replicator, configure, args, escaper);
         replicator.addEventListener(this);

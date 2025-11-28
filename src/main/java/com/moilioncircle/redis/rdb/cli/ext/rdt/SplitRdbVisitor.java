@@ -41,7 +41,7 @@ import com.moilioncircle.redis.replicator.rdb.datatype.Slot;
 public class SplitRdbVisitor extends AbstractRdtRdbVisitor {
 
     public SplitRdbVisitor(Replicator replicator, Configure configure, Args.RdtArgs arg, Supplier<OutputStream> supplier) {
-        super(replicator, configure, arg.filter, supplier);
+        super(replicator, configure, arg.filter, supplier);;
         this.replicator.addEventListener((rep, event) -> {
             if (event instanceof PreRdbSyncEvent) {
                 listener.reset(supplier.get());
