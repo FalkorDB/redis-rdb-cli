@@ -388,7 +388,7 @@ migrate_flush=yes
 
 1.  When migrating to a cluster, this tool uses the cluster's `nodes.conf` file and does not handle `MOVED` or `ASK` redirections. Therefore, a key limitation is that the cluster **MUST** be in a stable state during the migration. This means there should be no slots in a `migrating` or `importing` state, and no failovers (promoting a replica to master) should occur.
 2.  When using `rst` to migrate data to a cluster, the following commands are not supported: `PUBLISH`, `SWAPDB`, `MOVE`, `FLUSHALL`, `FLUSHDB`, `MULTI`, `EXEC`, `SCRIPT FLUSH`, `SCRIPT LOAD`, `EVAL`, `EVALSHA`.
-3.  Additionally, the following commands are **ONLY SUPPORTED WHEN ALL KEYS IN THE COMMAND BELONG TO THE SAME SLOT** (e.g., `del {user}:1 {user}:2`): `RPOPLPUSH`, `SDIFFSTORE`, `SINTERSTORE`, `SMOVE`, `ZINTERSTORE`, `ZUNIONSTORE`, `DEL`, `UNLINK`, `RENAME`, `RENAMENX`, `PFMERGE`, `PFCOUNT`, `MSETNX`, `BRPOPLPUSH`, `BITOP`, `MSET`, `COPY`, `BLMOVE`, `LMOVE`, `ZDIFFSTORE`, `GEOSEARCHSTORE`.
+3.  Additionally, the following commands are **ONLY SUPPORTED WHEN ALL KEYS IN THE COMMAND BELONG TO THE SAME SLOT** (e.g., `del {user}:1 {user}:2`): `RPOPLPUSH`, `SDIFFSTORE`, `SINTERSTORE`, `SMOVE`, `ZINTERSTORE`, `ZUNIONSTORE`, `DEL`, `UNLINK`, `RENAME`, `RENAMENX`, `PFMERGE`, `PFCOUNT`, `MSETNX`, `BRPOPLPUSH`, `BITOP`, `MSET`, `COPY`, `BLMOVE`, `LMOVE`, `ZDIFFSTORE`, `GEOSEARCHSTORE`, `MSETEX`.
 
 ## Hacking `ret`
 
