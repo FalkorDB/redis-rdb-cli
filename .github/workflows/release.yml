@@ -31,10 +31,10 @@ jobs:
         echo "SHA256=$SHA256" >> $GITHUB_ENV
     - name: Update Homebrew Tap
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PAT: ${{ secrets.PAT }}
       run: |
         # Clone tap repo
-        git clone https://x-access-token:${GITHUB_TOKEN}@github.com/leonchen83/homebrew-redis-rdb-cli.git
+        git clone https://x-access-token:${PAT}@github.com/leonchen83/homebrew-redis-rdb-cli.git
         cd homebrew-redis-rdb-cli
         
         FORMULA_FILE=Formula/redis-rdb-cli.rb
