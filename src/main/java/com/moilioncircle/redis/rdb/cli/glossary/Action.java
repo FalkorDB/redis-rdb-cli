@@ -23,6 +23,8 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +44,9 @@ import com.moilioncircle.redis.replicator.RedisURI;
 import com.moilioncircle.redis.replicator.Replicator;
 import com.moilioncircle.redis.replicator.io.CRCOutputStream;
 import com.moilioncircle.redis.replicator.io.RedisInputStream;
+import com.moilioncircle.redis.replicator.rdb.BaseRdbEncoder;
+import com.moilioncircle.redis.replicator.rdb.BaseRdbParser;
+import com.moilioncircle.redis.replicator.util.ByteArray;
 import com.moilioncircle.redis.replicator.util.Tuples;
 import com.moilioncircle.redis.replicator.util.type.Tuple2;
 
@@ -61,6 +66,7 @@ public enum Action {
                 if (isEmpty(arg.merge)) return list;
                 CRCOutputStream out = Outputs.newCRCOutput(arg.output, configure.getOutputBufferSize());
                 int version = 0;
+                long totalUsedMem = 0;
                 for (File file : arg.merge) {
                     RedisURI uri = XUris.fromFile(file);
                     if (uri.getFileType() == null || uri.getFileType() != RDB) {
@@ -68,6 +74,7 @@ public enum Action {
                     }
                     
                     version = maxVersion(version, file);
+                    totalUsedMem += scanUsedMem(file);
                     
                     Replicator r = new XRedisReplicator(uri, configure, DefaultReplFilter.RDB);
                     r.setRdbVisitor(new MergeRdbVisitor(r, configure, arg, () -> out));
@@ -84,6 +91,9 @@ public enum Action {
                 // header & version
                 out.write("REDIS".getBytes());
                 out.write(Strings.lappend(version, 4, '0').getBytes());
+                if (totalUsedMem > 0) {
+                    writeUsedMemAux(out, totalUsedMem);
+                }
                 return list;
             case SPLIT:
                 Replicator r = new XRedisReplicator(arg.split, configure, DefaultReplFilter.RDB);
@@ -101,6 +111,33 @@ public enum Action {
             default:
                 throw new AssertionError("Unsupported action '" + this + "'");
         }
+    }
+    
+    private long scanUsedMem(File file) {
+        try (RedisInputStream in = new RedisInputStream(new FileInputStream(file))) {
+            in.skip(9); // skip "REDIS" magic (5 bytes) + version (4 bytes)
+            BaseRdbParser parser = new BaseRdbParser(in);
+            while (true) {
+                int opcode = in.read();
+                if (opcode != 0xFA) break; // not an aux field opcode
+                byte[] key = parser.rdbLoadEncodedStringObject().first();
+                byte[] value = parser.rdbLoadEncodedStringObject().first();
+                if ("used-mem".equals(new String(key, StandardCharsets.UTF_8))) {
+                    return Long.parseLong(new String(value, StandardCharsets.UTF_8));
+                }
+            }
+        } catch (Exception ignore) {
+        }
+        return 0L;
+    }
+    
+    private void writeUsedMemAux(OutputStream out, long usedMem) throws IOException {
+        BaseRdbEncoder encoder = new BaseRdbEncoder();
+        byte[] keyBytes = "used-mem".getBytes();
+        byte[] valueBytes = Long.toString(usedMem).getBytes();
+        out.write(0xFA); // RDB_OPCODE_AUX
+        encoder.rdbSavePlainStringObject(new ByteArray(keyBytes), out);
+        encoder.rdbSavePlainStringObject(new ByteArray(valueBytes), out);
     }
     
     private int maxVersion(int version, File file) throws IOException {
