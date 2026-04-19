@@ -87,7 +87,7 @@ public abstract class BaseRdbVisitor extends DefaultRdbVisitor {
 	public int applyVersion(RedisInputStream in) throws IOException {
 		int version = Integer.parseInt(BaseRdbParser.StringHelper.str(in, 4));
 		if (version < 2 || version > 13) {
-			throw new UnsupportedOperationException("can't handle RDB format version" + version);
+			throw new UnsupportedOperationException("can't handle RDB format version " + version);
 		}
 		return version;
 	}
