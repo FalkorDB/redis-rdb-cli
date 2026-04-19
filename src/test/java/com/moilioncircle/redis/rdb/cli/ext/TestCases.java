@@ -29,6 +29,7 @@ public class TestCases {
 
     private String path;
     private static final String ACTUAL_SUFFIX = ".actual";
+    private static final int RDB_CHECKSUM_SIZE = 8;
 
     private String path(String path) {
         return this.path + "/" + path;
@@ -149,8 +150,8 @@ public class TestCases {
         Path temp = Files.createTempFile("redis-rdb-cli-v13-", ".rdb");
         byte[] bytes = Files.readAllBytes(new File(source).toPath());
         System.arraycopy("0013".getBytes(), 0, bytes, 5, 4);
-        byte[] crc = CRC64.longToByteArray(CRC64.crc64(bytes, 0, bytes.length - 8));
-        System.arraycopy(crc, 0, bytes, bytes.length - 8, 8);
+        byte[] crc = CRC64.longToByteArray(CRC64.crc64(bytes, 0, bytes.length - RDB_CHECKSUM_SIZE));
+        System.arraycopy(crc, 0, bytes, bytes.length - RDB_CHECKSUM_SIZE, RDB_CHECKSUM_SIZE);
         Files.write(temp, bytes);
         String actual = temp.toAbsolutePath().toString() + ".count.actual";
         new CommandLine(new XRct()).execute(new String[]{"-f", "count", "-s", temp.toAbsolutePath().toString(), "-o", actual});
