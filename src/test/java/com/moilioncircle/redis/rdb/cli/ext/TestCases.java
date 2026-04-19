@@ -18,6 +18,7 @@ import org.junit.Test;
 import com.moilioncircle.redis.rdb.cli.cmd.XRct;
 import com.moilioncircle.redis.rdb.cli.cmd.XRdt;
 import com.moilioncircle.redis.rdb.cli.cmd.XRmt;
+import com.moilioncircle.redis.replicator.util.CRC64;
 
 import picocli.CommandLine;
 
@@ -140,6 +141,20 @@ public class TestCases {
                 eq0(source, "dump7");
             }
         });
+    }
+    
+    @Test
+    public void testRctVersion13() throws Exception {
+        String source = path("rct/all.rdb");
+        Path temp = Files.createTempFile("redis-rdb-cli-v13-", ".rdb");
+        byte[] bytes = Files.readAllBytes(new File(source).toPath());
+        System.arraycopy("0013".getBytes(), 0, bytes, 5, 4);
+        byte[] crc = CRC64.longToByteArray(CRC64.crc64(bytes, 0, bytes.length - 8));
+        System.arraycopy(crc, 0, bytes, bytes.length - 8, 8);
+        Files.write(temp, bytes);
+        String actual = temp.toAbsolutePath().toString() + ".count.actual";
+        new CommandLine(new XRct()).execute(new String[]{"-f", "count", "-s", temp.toAbsolutePath().toString(), "-o", actual});
+        eq1(target(source, "count"), actual);
     }
     
     @Test
