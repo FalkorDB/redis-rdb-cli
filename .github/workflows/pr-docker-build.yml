@@ -1,0 +1,32 @@
+name: PR Docker Build
+
+on:
+  pull_request:
+
+jobs:
+  build:
+    name: Build Docker images
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build (no push)
+        uses: docker/build-push-action@v4
+        with:
+          context: ./
+          file: ./Dockerfile
+          push: false
+          platforms: linux/amd64,linux/arm64
+          tags: redis-rdb-cli:pr-${{ github.event.pull_request.number }}
+      - name: Build native (no push)
+        uses: docker/build-push-action@v4
+        with:
+          context: ./
+          file: ./DockerfileNative
+          push: false
+          platforms: linux/amd64,linux/arm64
+          tags: redis-rdb-cli:pr-${{ github.event.pull_request.number }}-native
