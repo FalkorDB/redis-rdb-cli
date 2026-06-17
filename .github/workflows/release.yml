@@ -2,6 +2,11 @@ name: Release
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. v1.2.3). Leave empty to use version from .version file.'
+        required: false
+        type: string
 
 permissions:
   contents: "write"
@@ -23,7 +28,7 @@ jobs:
       run: mvn -B install -DskipTests
     - name: Create Tag
       run: |
-        RELEASE_TAG=$(cat ./src/main/resources/.version)
+        RELEASE_TAG=$([ -n "${{ github.event.inputs.version }}" ] && echo "${{ github.event.inputs.version }}" || cat ./src/main/resources/.version)
         RELEASE_VER=${RELEASE_TAG#v}
         echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
         echo "RELEASE_VER=$RELEASE_VER" >> $GITHUB_ENV
