@@ -1,3 +1,7 @@
+### 0.9.11
+
+Replace redis replicator with RDB_TYPE_STREAM_LISTPACKS_4 = 26
+
 ### 0.9.10
 
 Support for redis 8.4.  
