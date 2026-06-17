@@ -32,10 +32,23 @@ jobs:
         prerelease: false
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Login to Docker Hub
-      uses: docker/login-action@v2
+      uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKER_USER }}
         password: ${{ secrets.DOCKER_PASSWORD }}
+    - name: Authenticate to Google Cloud
+      id: auth
+      uses: google-github-actions/auth@v2
+      with:
+        token_format: access_token
+        workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+        service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+    - name: Login to GCP Artifact Registry
+      uses: docker/login-action@v3
+      with:
+        registry: us-central1-docker.pkg.dev
+        username: oauth2accesstoken
+        password: ${{ steps.auth.outputs.access_token }}
     - name: Set up Docker Buildx
       id: buildx
       uses: docker/setup-buildx-action@v2
@@ -46,7 +59,9 @@ jobs:
         context: ./
         file: ./Dockerfile
         push: true
-        tags: ${{ secrets.DOCKER_USER }}/${{ secrets.REPO }}:latest
+        tags: |
+          ${{ secrets.DOCKER_USER }}/${{ secrets.REPO }}:latest
+          us-central1-docker.pkg.dev/falkordb-public/public/${{ secrets.REPO }}:latest
     - name: Build and Push ${{ env.RELEASE_TAG }}
       id: tag
       uses: docker/build-push-action@v4
@@ -54,7 +69,9 @@ jobs:
         context: ./
         file: ./Dockerfile
         push: true
-        tags: ${{ secrets.DOCKER_USER }}/${{ secrets.REPO }}:${{ env.RELEASE_TAG }}
+        tags: |
+          ${{ secrets.DOCKER_USER }}/${{ secrets.REPO }}:${{ env.RELEASE_TAG }}
+          us-central1-docker.pkg.dev/falkordb-public/public/${{ secrets.REPO }}:${{ env.RELEASE_TAG }}
     - name: Build and Push latest-native
       id: latest-native
       uses: docker/build-push-action@v4
@@ -62,7 +79,9 @@ jobs:
         context: ./
         file: ./DockerfileNative
         push: true
-        tags: ${{ secrets.DOCKER_USER }}/${{ secrets.REPO }}:latest-native
+        tags: |
+          ${{ secrets.DOCKER_USER }}/${{ secrets.REPO }}:latest-native
+          us-central1-docker.pkg.dev/falkordb-public/public/${{ secrets.REPO }}:latest-native
     - name: Build and Push ${{ env.RELEASE_TAG }}-native
       id: tag-native
       uses: docker/build-push-action@v4
@@ -70,6 +89,8 @@ jobs:
         context: ./
         file: ./DockerfileNative
         push: true
-        tags: ${{ secrets.DOCKER_USER }}/${{ secrets.REPO }}:${{ env.RELEASE_TAG }}-native
+        tags: |
+          ${{ secrets.DOCKER_USER }}/${{ secrets.REPO }}:${{ env.RELEASE_TAG }}-native
+          us-central1-docker.pkg.dev/falkordb-public/public/${{ secrets.REPO }}:${{ env.RELEASE_TAG }}-native
     - name: Image digest
       run: echo ${{ steps.docker_build.outputs.digest }}
