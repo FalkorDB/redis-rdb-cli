@@ -1,3 +1,23 @@
+### 0.9.10
+
+Support for redis 8.4.  
+Support for Java 25.  
+
+### 0.9.9
+
+Fix script Make Homebrew and symlink friendly
+Fix script execution failure when running from parent directories.  
+Chore: enable multi-platform Docker builds via buildx.  
+
+### 0.9.8
+
+Add support for redis 8.2.  
+
+### 0.9.7
+
+Add support for redis 8.0.  
+Remove native image support.  
+
 ### 0.9.6
 
 Fix `rdt` convert db bug.  

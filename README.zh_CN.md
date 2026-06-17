@@ -29,10 +29,14 @@ jdk 1.8+
 ## 安装
 
 ```shell
-$ wget https://github.com/leonchen83/redis-rdb-cli/releases/download/${version}/redis-rdb-cli-release.zip
+$ wget https://github.com/leonchen83/redis-rdb-cli/releases/latest/download/redis-rdb-cli-release.zip
 $ unzip redis-rdb-cli-release.zip
-$ cd ./redis-rdb-cli/bin
-$ ./rct -h
+$ ./redis-rdb-cli/bin/rct -h
+
+# MacOS homebrew installation
+$ brew tap leonchen83/redis-rdb-cli
+$ brew install redis-rdb-cli
+$ rct -h
 ```
 
 ## 手动编译依赖
@@ -50,27 +54,14 @@ maven-3.3.1+
 $ git clone https://github.com/leonchen83/redis-rdb-cli.git
 $ cd redis-rdb-cli
 $ mvn clean install -Dmaven.test.skip=true
-$ cd target/redis-rdb-cli-release/redis-rdb-cli/bin
-$ ./rct -h 
+$ ./target/redis-rdb-cli-release/redis-rdb-cli/bin/rct -h 
 ```
 
 ## 在docker中运行
 
 ```shell
-# run with jvm
 $ docker run -it --rm redisrdbcli/redis-rdb-cli:latest
 $ rct -V
-
-# run without jvm
-$ docker run -it --rm redisrdbcli/redis-rdb-cli:latest-native
-$ rct -V
-```
-
-## 在docker中通过graalvm构建native image
-```shell
-$ docker build -m 8g -f DockerfileNative -t redisrdbcli:redis-rdb-cli .
-$ docker run -it redisrdbcli:redis-rdb-cli bash
-$ bash-5.1# rct -V
 ```
 
 ## 设置Windows环境变量
@@ -82,10 +73,8 @@ $ bash-5.1# rct -V
 ### Redis大量数据插入
 
 ```shell
-
 $ rct -f dump -s /path/to/dump.rdb -o /path/to/dump.aof -r
 $ cat /path/to/dump.aof | /redis/src/redis-cli -p 6379 --pipe
-
 ```
 
 ### 把rdb转换成dump格式
@@ -153,7 +142,6 @@ $ rmt -s /path/to/dump.rdb -m redis://192.168.1.105:6379 -r
 ### 降级迁移
 
 ```shell
-
 # 同步 redis-7 的数据到 redis-6
 # 关于参数 dump_rdb_version 请查看 redis-rdb-cli.conf 的相关注释
 $ sed -i 's/dump_rdb_version=-1/dump_rdb_version=9/g' /path/to/redis-rdb-cli/conf/redis-rdb-cli.conf
@@ -162,7 +150,6 @@ $ rmt -s redis://com.redis7:6379 -m redis://com.redis6:6379 -r
 
 ### 在同步过程中处理大key
 ```shell
-
 # 在目标redis中设置 proto-max-bulk-len 合适的值
 $ redis-cli -h ${host} -p 6380 -a ${pwd} config set proto-max-bulk-len 2048mb
 
@@ -171,7 +158,6 @@ $ export JAVA_TOOL_OPTIONS="-Xms8g -Xmx8g"
 
 # 执行迁移
 $ rmt -s redis://127.0.0.1:6379 -m redis://127.0.0.1:6380 -r
-
 ```
 
 ### 同步rdb到远端redis集群
@@ -234,7 +220,6 @@ $ rcut -s ./aof-use-rdb-preamble.aof -r ./dump.rdb -a ./appendonly.aof
 举例如下:  
 
 ```shell
-
 $ rct -f dump -s /path/to/dump.rdb -o /path/to/dump.aof -d 0
 $ rct -f dump -s /path/to/dump.rdb -o /path/to/dump.aof -t string hash
 $ rmt -s /path/to/dump.rdb -m redis://192.168.1.105:6379 -r -d 0 1 -t list
@@ -287,11 +272,11 @@ $ docker-compose down
 ```
   
 `cd /path/to/redis-rdb-cli/conf/redis-rdb-cli.conf`  
-把 [metric_gateway](https://github.com/leonchen83/redis-rdb-cli/blob/master/src/main/resources/redis-rdb-cli.conf#L169) 这个参数从 `none` 改成 `influxdb`  
+把 `metric_gateway` 这个参数从 `none` 改成 `influxdb`  
   
 浏览器打开 `http://localhost:3000` 来查看 `rct -f mem` 命令的结果.  
   
-如果你把这个工具部署在多个实例上, 需要更改如下参数 [metric_instance](https://github.com/leonchen83/redis-rdb-cli/blob/master/src/main/resources/redis-rdb-cli.conf#L215) 并保证在每个实例上参数名唯一  
+如果你把这个工具部署在多个实例上, 需要更改如下参数 `metric_instance` 并保证在每个实例上参数名唯一  
   
 ## Redis 6
   
@@ -300,17 +285,15 @@ $ docker-compose down
 1. 用 openssl 生成 keystore
   
 ```shell
-
 $ cd /path/to/redis-6.0-rc1
 $ ./utils/gen-test-certs.sh
 $ cd tests/tls
 $ openssl pkcs12 -export -CAfile ca.crt -in redis.crt -inkey redis.key -out redis.p12
-
 ```
   
 2. 如果源 redis 和目标 redis 使用同样的 keystore. 那么配置如下参数  
-将 [source_keystore_path](https://github.com/leonchen83/redis-rdb-cli/blob/master/src/main/resources/redis-rdb-cli.conf#L230) 和 [target_keystore_path](https://github.com/leonchen83/redis-rdb-cli/blob/master/src/main/resources/redis-rdb-cli.conf#L259) 指向 `/path/to/redis-6.0-rc1/tests/tls/redis.p12`  
-设置 [source_keystore_pass](https://github.com/leonchen83/redis-rdb-cli/blob/master/src/main/resources/redis-rdb-cli.conf#L238) 和 [target_keystore_pass](https://github.com/leonchen83/redis-rdb-cli/blob/master/src/main/resources/redis-rdb-cli.conf#L267)  
+将 `source_keystore_path` 和 `target_keystore_path` 指向 `/path/to/redis-6.0-rc1/tests/tls/redis.p12`  
+设置 `source_keystore_pass` 和 `target_keystore_pass`  
   
 3. 在配置完 ssl 参数之后, 在你的命令中使用 `rediss://host:port` 这样的URI来开启ssl, 比如: `rst -s rediss://127.0.0.1:6379 -m rediss://127.0.0.1:30001 -r -d 0`
   
@@ -419,7 +402,7 @@ migrate_flush=yes
 ## 同步的限制
 
 1. 我们通过集群的 `nodes.conf` 文件来同步数据到集群. 因为我们没有处理 `MOVED` `ASK` 重定向. 因此唯一的限制是集群在同步期间 **必须** 是稳定的状态. 这意味着集群 **必须** 不存在 `migrating`, `importing` 这样的slot. 而且没有主从切换. 
-2. 当使用 `rst` 命令迁移数据到集群的时候. 下面的命令不支持： `PUBLISH,SWAPDB,MOVE,FLUSHALL,FLUSHDB,MULTI,EXEC,SCRIPT FLUSH,SCRIPT LOAD,EVAL,EVALSHA`. 下面的命令**有限支持** `RPOPLPUSH,SDIFFSTORE,SINTERSTORE,SMOVE,ZINTERSTORE,ZUNIONSTORE,DEL,UNLINK,RENAME,RENAMENX,PFMERGE,PFCOUNT,MSETNX,BRPOPLPUSH,BITOP,MSET,COPY,BLMOVE,LMOVE,ZDIFFSTORE,GEOSEARCHSTORE`.**只有这些命令里包含的 keys 在同一个slot的时候**(eg: `del {user}:1 {user}:2`)才支持.
+2. 当使用 `rst` 命令迁移数据到集群的时候. 下面的命令不支持： `PUBLISH,SWAPDB,MOVE,FLUSHALL,FLUSHDB,MULTI,EXEC,SCRIPT FLUSH,SCRIPT LOAD,EVAL,EVALSHA`. 下面的命令**有限支持** `RPOPLPUSH,SDIFFSTORE,SINTERSTORE,SMOVE,ZINTERSTORE,ZUNIONSTORE,DEL,UNLINK,RENAME,RENAMENX,PFMERGE,PFCOUNT,MSETNX,BRPOPLPUSH,BITOP,MSET,COPY,BLMOVE,LMOVE,ZDIFFSTORE,GEOSEARCHSTORE,MSETEX`.**只有这些命令里包含的 keys 在同一个slot的时候**(eg: `del {user}:1 {user}:2`)才支持.
 
 ## Hack ret
 
@@ -434,8 +417,7 @@ migrate_flush=yes
 
 1. 使用如下maven pom.xml文件创建一个Java工程
 
-```xml  
-
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -456,13 +438,13 @@ migrate_flush=yes
         <dependency>
             <groupId>com.moilioncircle</groupId>
             <artifactId>redis-rdb-cli-api</artifactId>
-            <version>1.8.0</version>
+            <version>1.9.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.moilioncircle</groupId>
             <artifactId>redis-replicator</artifactId>
-            <version>[3.6.4, )</version>
+            <version>[3.9.0, )</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -596,8 +578,7 @@ $ ret -s redis://127.0.0.1:6379 -c config.conf -n your-sink-service
 
 1. 创建class `YourFormatterService` 继承 `AbstractFormatterService`  
 
-```java  
-
+```java
 public class YourFormatterService extends AbstractFormatterService {
 
     @Override
@@ -614,7 +595,6 @@ public class YourFormatterService extends AbstractFormatterService {
         return context;
     }
 }
-
 ```
 
 2. 使用Java SPI来注册这个实现类  
@@ -647,7 +627,6 @@ $ cp ./target/your-service-1.0.0-jar-with-dependencies.jar /path/to/redis-rdb-cl
 4. 运行formatter服务
 
 ```shell
-
 $ rct -f test -s redis://127.0.0.1:6379 -o ./out.csv -t string -d 0 -e json
 ```
 
@@ -659,7 +638,7 @@ $ rct -f test -s redis://127.0.0.1:6379 -o ./out.csv -t string -d 0 -e json
 * [Anish Karandikar](https://github.com/anishkny)
 * [Air](https://github.com/air3ijai)
 * [Raghu Nandan B S](https://github.com/raghu-nandan-bs)
-* 特别感谢[Kater Technologies](https://www.kater.com/)
+* [Mads Nedergaard](https://github.com/madsnedergaard)
 
 # 商业咨询
 
