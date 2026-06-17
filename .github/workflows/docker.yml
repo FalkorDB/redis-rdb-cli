@@ -16,7 +16,7 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USER }}
+          username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -32,7 +32,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: false
           tags: |
-            ${{ secrets.DOCKER_USER }}/${{ secrets.REPO }}:latest
-            ${{ secrets.DOCKER_USER }}/${{ secrets.REPO }}:${{ env.RELEASE_TAG }}
+            ${{ secrets.DOCKER_USERNAME }}/${{ secrets.REPO }}:latest
+            ${{ secrets.DOCKER_USERNAME }}/${{ secrets.REPO }}:${{ env.RELEASE_TAG }}
       - name: Image digest
         run: echo ${{ steps.latest.outputs.digest }}

@@ -9,10 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Set up JDK 8
+    - name: Set up JDK 11
       uses: actions/setup-java@v4
       with:
-        java-version: '8'
+        java-version: '11'
         distribution: 'adopt'
         check-latest: false
     - name: Build with Maven
@@ -64,14 +64,27 @@ jobs:
     - name: Login to Docker Hub
       uses: docker/login-action@v3
       with:
-        username: ${{ secrets.DOCKER_USER }}
+        username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
+    - name: Authenticate to Google Cloud
+      id: auth
+      uses: google-github-actions/auth@v2
+      with:
+        token_format: access_token
+        workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+        service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+    - name: Login to GCP Artifact Registry
+      uses: docker/login-action@v3
+      with:
+        registry: us-central1-docker.pkg.dev
+        username: oauth2accesstoken
+        password: ${{ steps.auth.outputs.access_token }}
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
     - name: Set up Docker Buildx
       id: buildx
       uses: docker/setup-buildx-action@v3
-    - name: Build and Push latest
+    - name: Build and Push
       id: latest
       uses: docker/build-push-action@v6
       with:
@@ -80,7 +93,11 @@ jobs:
         platforms: linux/amd64,linux/arm64
         push: true
         tags: |
-          ${{ secrets.DOCKER_USER }}/${{ secrets.REPO }}:latest
-          ${{ secrets.DOCKER_USER }}/${{ secrets.REPO }}:${{ env.RELEASE_TAG }}
+          ${{ secrets.DOCKER_USERNAME }}/${{ secrets.REPO }}:latest
+          ${{ secrets.DOCKER_USERNAME }}/${{ secrets.REPO }}:${{ env.RELEASE_TAG }}
+          us-central1-docker.pkg.dev/falkordb-public/public/${{ secrets.REPO }}:latest
+          us-central1-docker.pkg.dev/falkordb-public/public/${{ secrets.REPO }}:${{ env.RELEASE_TAG }}
+        cache-from: type=gha,scope=dockerfile
+        cache-to: type=gha,mode=max,scope=dockerfile
     - name: Image digest
       run: echo ${{ steps.latest.outputs.digest }}
