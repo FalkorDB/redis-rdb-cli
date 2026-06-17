@@ -42,7 +42,6 @@ public class DumpRawByteListener implements RawByteListener, Closeable {
         this(replicator, version, out, escaper, true);
     }
     
-    //noinspection ThisEscapedInObjectConstruction
     public DumpRawByteListener(Replicator replicator, int version, OutputStream out, Escaper escaper, boolean listener) {
         this.version = version;
         this.listener = listener;

@@ -33,6 +33,7 @@ import com.moilioncircle.redis.replicator.event.PreRdbSyncEvent;
 import com.moilioncircle.redis.replicator.io.RedisInputStream;
 import com.moilioncircle.redis.replicator.rdb.datatype.ContextKeyValuePair;
 import com.moilioncircle.redis.replicator.rdb.datatype.DB;
+import com.moilioncircle.redis.replicator.rdb.datatype.Slot;
 
 /**
  * @author Baoyi Chen
@@ -40,7 +41,7 @@ import com.moilioncircle.redis.replicator.rdb.datatype.DB;
 public class SplitRdbVisitor extends AbstractRdtRdbVisitor {
 
     public SplitRdbVisitor(Replicator replicator, Configure configure, Args.RdtArgs arg, Supplier<OutputStream> supplier) {
-        super(replicator, configure, arg.filter, supplier);
+        super(replicator, configure, arg.filter, supplier);;
         this.replicator.addEventListener((rep, event) -> {
             if (event instanceof PreRdbSyncEvent) {
                 listener.reset(supplier.get());
@@ -120,12 +121,22 @@ public class SplitRdbVisitor extends AbstractRdtRdbVisitor {
             listener.setGuard(Guard.SAVE);
         }
     }
-
+    
     @Override
     public DB applyResizeDB(RedisInputStream in, int version, ContextKeyValuePair context) throws IOException {
         listener.setGuard(Guard.DRAIN);
         try {
             return super.applyResizeDB(in, version, context);
+        } finally {
+            listener.setGuard(Guard.SAVE);
+        }
+    }
+    
+    @Override
+    public Slot applySlotInfo(RedisInputStream in, int version) throws IOException {
+        listener.setGuard(Guard.PASS);
+        try {
+            return super.applySlotInfo(in, version);
         } finally {
             listener.setGuard(Guard.SAVE);
         }
@@ -207,6 +218,18 @@ public class SplitRdbVisitor extends AbstractRdtRdbVisitor {
     protected Event doApplyListQuickList(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
         shard(key);
         return super.doApplyListQuickList(in, version, key, type, context);
+    }
+    
+    @Override
+    protected Event doApplyHashMetadata(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+        shard(key);
+        return super.doApplyHashMetadata(in, version, key, type, context);
+    }
+    
+    @Override
+    protected Event doApplyHashListPackEx(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+        shard(key);
+        return super.doApplyHashListPackEx(in, version, key, type, context);
     }
 
     @Override
