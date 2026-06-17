@@ -19,7 +19,37 @@ jobs:
       run: mvn -B install -DskipTests
     - name: Create Tag
       run: |
-        echo "RELEASE_TAG=`cat ./src/main/resources/.version`" >> $GITHUB_ENV
+        RELEASE_TAG=$(cat ./src/main/resources/.version)
+        RELEASE_VER=${RELEASE_TAG#v}
+        echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
+        echo "RELEASE_VER=$RELEASE_VER" >> $GITHUB_ENV
+    - name: Compute SHA256
+      id: sha
+      run: |
+        FILE=./target/redis-rdb-cli-release.tar.gz
+        SHA256=$(shasum -a 256 "$FILE" | awk '{print $1}')
+        echo "SHA256=$SHA256" >> $GITHUB_ENV
+    - name: Update Homebrew Tap
+      env:
+        PAT: ${{ secrets.PAT }}
+      run: |
+        # Clone tap repo
+        git clone https://x-access-token:${PAT}@github.com/leonchen83/homebrew-redis-rdb-cli.git
+        cd homebrew-redis-rdb-cli
+        
+        FORMULA_FILE=Formula/redis-rdb-cli.rb
+        
+        # Update formula fields
+        sed -i "s|url \".*\"|url \"https://github.com/leonchen83/redis-rdb-cli/releases/download/${RELEASE_TAG}/redis-rdb-cli-release.tar.gz\"|" $FORMULA_FILE
+        sed -i "s|version \".*\"|version \"${RELEASE_VER}\"|" $FORMULA_FILE
+        sed -i "s|sha256 \".*\"|sha256 \"${SHA256}\"|" $FORMULA_FILE
+        
+        # Commit & push
+        git config user.name "github-actions"
+        git config user.email "github-actions@users.noreply.github.com"
+        git add $FORMULA_FILE
+        git commit -m "Update redis-rdb-cli to ${RELEASE_VER}"
+        git push origin main
     - name: Create Release
       id: create_release
       uses: ncipollo/release-action@v1
@@ -36,6 +66,7 @@ jobs:
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
+<<<<<<< HEAD
     - name: Authenticate to Google Cloud
       id: auth
       uses: google-github-actions/auth@v2
@@ -49,18 +80,22 @@ jobs:
         registry: us-central1-docker.pkg.dev
         username: oauth2accesstoken
         password: ${{ steps.auth.outputs.access_token }}
+=======
+>>>>>>> origin/master
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
     - name: Set up Docker Buildx
       id: buildx
-      uses: docker/setup-buildx-action@v2
+      uses: docker/setup-buildx-action@v3
     - name: Build and Push latest
       id: latest
-      uses: docker/build-push-action@v4
+      uses: docker/build-push-action@v6
       with:
         context: ./
         file: ./Dockerfile
+        platforms: linux/amd64,linux/arm64
         push: true
+<<<<<<< HEAD
         platforms: linux/amd64,linux/arm64
         tags: |
           ${{ secrets.DOCKER_USERNAME }}/${{ secrets.REPO }}:latest
@@ -106,5 +141,10 @@ jobs:
           us-central1-docker.pkg.dev/falkordb-public/public/${{ secrets.REPO }}:${{ env.RELEASE_TAG }}-native
         cache-from: type=gha,scope=dockerfilenative
         cache-to: type=gha,mode=max,scope=dockerfilenative
+=======
+        tags: |
+          ${{ secrets.DOCKER_USER }}/${{ secrets.REPO }}:latest
+          ${{ secrets.DOCKER_USER }}/${{ secrets.REPO }}:${{ env.RELEASE_TAG }}
+>>>>>>> origin/master
     - name: Image digest
-      run: echo ${{ steps.docker_build.outputs.digest }}
+      run: echo ${{ steps.latest.outputs.digest }}

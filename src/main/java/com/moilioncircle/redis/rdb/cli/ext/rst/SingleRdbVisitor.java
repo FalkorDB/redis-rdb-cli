@@ -76,7 +76,6 @@ public class SingleRdbVisitor extends AbstractRstRdbVisitor implements EventList
     private final Configuration conf;
     private ThreadLocal<XEndpoint> endpoint = new ThreadLocal<>();
     
-    //noinspection ThisEscapedInObjectConstruction
     public SingleRdbVisitor(Replicator replicator, Configure configure, Filter filter, RedisURI uri, boolean replace, boolean legacy) throws Exception {
         super(replicator, configure, filter, replace);
         this.uri = uri;

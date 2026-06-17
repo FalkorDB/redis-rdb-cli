@@ -56,6 +56,7 @@ import com.moilioncircle.redis.replicator.cmd.impl.GenericKeyCommand;
 import com.moilioncircle.redis.replicator.cmd.impl.GeoSearchStoreCommand;
 import com.moilioncircle.redis.replicator.cmd.impl.LMoveCommand;
 import com.moilioncircle.redis.replicator.cmd.impl.MSetCommand;
+import com.moilioncircle.redis.replicator.cmd.impl.MSetExCommand;
 import com.moilioncircle.redis.replicator.cmd.impl.MSetNxCommand;
 import com.moilioncircle.redis.replicator.cmd.impl.PFCountCommand;
 import com.moilioncircle.redis.replicator.cmd.impl.PFMergeCommand;
@@ -94,7 +95,6 @@ public class ClusterRdbVisitor extends AbstractRstRdbVisitor implements EventLis
     private final Configuration configuration;
     private ThreadLocal<XEndpoints> endpoints = new ThreadLocal<>();
     
-    //noinspection ThisEscapedInObjectConstruction
     public ClusterRdbVisitor(Replicator replicator, Configure configure, Filter filter, RedisURI uri, List<String> lines, boolean replace) throws IOException {
         super(replicator, configure, filter, replace);
         this.lines = lines;
@@ -290,6 +290,16 @@ public class ClusterRdbVisitor extends AbstractRstRdbVisitor implements EventLis
             }
         } else if (parsedCommand instanceof MSetNxCommand) {
             MSetNxCommand cmd = (MSetNxCommand) parsedCommand;
+            byte[][] keys = cmd.getKv().keySet().toArray(new byte[0][]);
+            short slot = slot0(keys);
+            if (slot != -1) {
+                retry(command, slot, times);
+            } else {
+                MONITOR.add(ENDPOINT_FAILURE, "slot", 1);
+                logger.error("failure[slot] [{}]", command);
+            }
+        } else if (parsedCommand instanceof MSetExCommand) {
+            MSetExCommand cmd = (MSetExCommand) parsedCommand;
             byte[][] keys = cmd.getKv().keySet().toArray(new byte[0][]);
             short slot = slot0(keys);
             if (slot != -1) {

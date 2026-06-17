@@ -65,6 +65,8 @@ import com.moilioncircle.redis.replicator.cmd.parser.GetSetParser;
 import com.moilioncircle.redis.replicator.cmd.parser.HDelParser;
 import com.moilioncircle.redis.replicator.cmd.parser.HIncrByParser;
 import com.moilioncircle.redis.replicator.cmd.parser.HMSetParser;
+import com.moilioncircle.redis.replicator.cmd.parser.HPExpireAtParser;
+import com.moilioncircle.redis.replicator.cmd.parser.HPersistParser;
 import com.moilioncircle.redis.replicator.cmd.parser.HSetNxParser;
 import com.moilioncircle.redis.replicator.cmd.parser.HSetParser;
 import com.moilioncircle.redis.replicator.cmd.parser.IncrByParser;
@@ -77,6 +79,7 @@ import com.moilioncircle.redis.replicator.cmd.parser.LPushXParser;
 import com.moilioncircle.redis.replicator.cmd.parser.LRemParser;
 import com.moilioncircle.redis.replicator.cmd.parser.LSetParser;
 import com.moilioncircle.redis.replicator.cmd.parser.LTrimParser;
+import com.moilioncircle.redis.replicator.cmd.parser.MSetExParser;
 import com.moilioncircle.redis.replicator.cmd.parser.MSetNxParser;
 import com.moilioncircle.redis.replicator.cmd.parser.MSetParser;
 import com.moilioncircle.redis.replicator.cmd.parser.MoveParser;
@@ -115,9 +118,11 @@ import com.moilioncircle.redis.replicator.cmd.parser.SetRangeParser;
 import com.moilioncircle.redis.replicator.cmd.parser.SortParser;
 import com.moilioncircle.redis.replicator.cmd.parser.SwapDBParser;
 import com.moilioncircle.redis.replicator.cmd.parser.UnLinkParser;
+import com.moilioncircle.redis.replicator.cmd.parser.XAckDelParser;
 import com.moilioncircle.redis.replicator.cmd.parser.XAckParser;
 import com.moilioncircle.redis.replicator.cmd.parser.XAddParser;
 import com.moilioncircle.redis.replicator.cmd.parser.XClaimParser;
+import com.moilioncircle.redis.replicator.cmd.parser.XDelExParser;
 import com.moilioncircle.redis.replicator.cmd.parser.XDelParser;
 import com.moilioncircle.redis.replicator.cmd.parser.XGroupParser;
 import com.moilioncircle.redis.replicator.cmd.parser.XSetIdParser;
@@ -133,6 +138,7 @@ import com.moilioncircle.redis.replicator.cmd.parser.ZRemRangeByLexParser;
 import com.moilioncircle.redis.replicator.cmd.parser.ZRemRangeByRankParser;
 import com.moilioncircle.redis.replicator.cmd.parser.ZRemRangeByScoreParser;
 import com.moilioncircle.redis.replicator.cmd.parser.ZUnionStoreParser;
+import com.moilioncircle.redis.replicator.cmd.parser.HSetExParser;
 import com.moilioncircle.redis.replicator.event.PreRdbSyncEvent;
 import com.moilioncircle.redis.replicator.rdb.RdbVisitor;
 
@@ -354,6 +360,15 @@ public class XRst implements Callable<Integer> {
 		// since redis 7.0
 		replicator.addCommandParser(CommandName.name("SPUBLISH"), new CombineCommandParser(new SPublishParser()));
 		replicator.addCommandParser(CommandName.name("FUNCTION"), new CombineCommandParser(new FunctionParser()));
+		// since redis 7.4
+		replicator.addCommandParser(CommandName.name("HSETEX"), new CombineCommandParser(new HSetExParser()));
+		replicator.addCommandParser(CommandName.name("HPEXPIREAT"), new CombineCommandParser(new HPExpireAtParser()));
+		replicator.addCommandParser(CommandName.name("HPERSIST"), new CombineCommandParser(new HPersistParser()));
+		// since redis 8.2
+		replicator.addCommandParser(CommandName.name("XACKDEL"), new CombineCommandParser(new XAckDelParser()));
+		replicator.addCommandParser(CommandName.name("XDELEX"), new CombineCommandParser(new XDelExParser()));
+		// since redis 8.4
+		replicator.addCommandParser(CommandName.name("MSETEX"), new CombineCommandParser(new MSetExParser()));
 		return replicator;
 	}
 }
