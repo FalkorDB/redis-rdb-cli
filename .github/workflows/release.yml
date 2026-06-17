@@ -29,27 +29,6 @@ jobs:
         FILE=./target/redis-rdb-cli-release.tar.gz
         SHA256=$(shasum -a 256 "$FILE" | awk '{print $1}')
         echo "SHA256=$SHA256" >> $GITHUB_ENV
-    - name: Update Homebrew Tap
-      env:
-        PAT: ${{ secrets.PAT }}
-      run: |
-        # Clone tap repo
-        git clone https://x-access-token:${PAT}@github.com/leonchen83/homebrew-redis-rdb-cli.git
-        cd homebrew-redis-rdb-cli
-        
-        FORMULA_FILE=Formula/redis-rdb-cli.rb
-        
-        # Update formula fields
-        sed -i "s|url \".*\"|url \"https://github.com/leonchen83/redis-rdb-cli/releases/download/${RELEASE_TAG}/redis-rdb-cli-release.tar.gz\"|" $FORMULA_FILE
-        sed -i "s|version \".*\"|version \"${RELEASE_VER}\"|" $FORMULA_FILE
-        sed -i "s|sha256 \".*\"|sha256 \"${SHA256}\"|" $FORMULA_FILE
-        
-        # Commit & push
-        git config user.name "github-actions"
-        git config user.email "github-actions@users.noreply.github.com"
-        git add $FORMULA_FILE
-        git commit -m "Update redis-rdb-cli to ${RELEASE_VER}"
-        git push origin main
     - name: Create Release
       id: create_release
       uses: ncipollo/release-action@v1
