@@ -34,7 +34,7 @@ jobs:
     - name: Login to Docker Hub
       uses: docker/login-action@v3
       with:
-        username: ${{ secrets.DOCKER_USER }}
+        username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
     - name: Authenticate to Google Cloud
       id: auth
@@ -60,7 +60,7 @@ jobs:
         file: ./Dockerfile
         push: true
         tags: |
-          ${{ secrets.DOCKER_USER }}/${{ secrets.REPO }}:latest
+          ${{ secrets.DOCKER_USERNAME }}/${{ secrets.REPO }}:latest
           us-central1-docker.pkg.dev/falkordb-public/public/${{ secrets.REPO }}:latest
     - name: Build and Push ${{ env.RELEASE_TAG }}
       id: tag
@@ -70,7 +70,7 @@ jobs:
         file: ./Dockerfile
         push: true
         tags: |
-          ${{ secrets.DOCKER_USER }}/${{ secrets.REPO }}:${{ env.RELEASE_TAG }}
+          ${{ secrets.DOCKER_USERNAME }}/${{ secrets.REPO }}:${{ env.RELEASE_TAG }}
           us-central1-docker.pkg.dev/falkordb-public/public/${{ secrets.REPO }}:${{ env.RELEASE_TAG }}
     - name: Build and Push latest-native
       id: latest-native
@@ -80,7 +80,7 @@ jobs:
         file: ./DockerfileNative
         push: true
         tags: |
-          ${{ secrets.DOCKER_USER }}/${{ secrets.REPO }}:latest-native
+          ${{ secrets.DOCKER_USERNAME }}/${{ secrets.REPO }}:latest-native
           us-central1-docker.pkg.dev/falkordb-public/public/${{ secrets.REPO }}:latest-native
     - name: Build and Push ${{ env.RELEASE_TAG }}-native
       id: tag-native
@@ -90,7 +90,7 @@ jobs:
         file: ./DockerfileNative
         push: true
         tags: |
-          ${{ secrets.DOCKER_USER }}/${{ secrets.REPO }}:${{ env.RELEASE_TAG }}-native
+          ${{ secrets.DOCKER_USERNAME }}/${{ secrets.REPO }}:${{ env.RELEASE_TAG }}-native
           us-central1-docker.pkg.dev/falkordb-public/public/${{ secrets.REPO }}:${{ env.RELEASE_TAG }}-native
     - name: Image digest
       run: echo ${{ steps.docker_build.outputs.digest }}
