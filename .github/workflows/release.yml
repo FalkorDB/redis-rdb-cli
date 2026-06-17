@@ -65,6 +65,8 @@ jobs:
         tags: |
           ${{ secrets.DOCKER_USERNAME }}/${{ secrets.REPO }}:latest
           us-central1-docker.pkg.dev/falkordb-public/public/${{ secrets.REPO }}:latest
+        cache-from: type=gha,scope=dockerfile
+        cache-to: type=gha,mode=max,scope=dockerfile
     - name: Build and Push ${{ env.RELEASE_TAG }}
       id: tag
       uses: docker/build-push-action@v4
@@ -76,6 +78,8 @@ jobs:
         tags: |
           ${{ secrets.DOCKER_USERNAME }}/${{ secrets.REPO }}:${{ env.RELEASE_TAG }}
           us-central1-docker.pkg.dev/falkordb-public/public/${{ secrets.REPO }}:${{ env.RELEASE_TAG }}
+        cache-from: type=gha,scope=dockerfile
+        cache-to: type=gha,mode=max,scope=dockerfile
     - name: Build and Push latest-native
       id: latest-native
       uses: docker/build-push-action@v4
@@ -87,6 +91,8 @@ jobs:
         tags: |
           ${{ secrets.DOCKER_USERNAME }}/${{ secrets.REPO }}:latest-native
           us-central1-docker.pkg.dev/falkordb-public/public/${{ secrets.REPO }}:latest-native
+        cache-from: type=gha,scope=dockerfilenative
+        cache-to: type=gha,mode=max,scope=dockerfilenative
     - name: Build and Push ${{ env.RELEASE_TAG }}-native
       id: tag-native
       uses: docker/build-push-action@v4
@@ -98,5 +104,7 @@ jobs:
         tags: |
           ${{ secrets.DOCKER_USERNAME }}/${{ secrets.REPO }}:${{ env.RELEASE_TAG }}-native
           us-central1-docker.pkg.dev/falkordb-public/public/${{ secrets.REPO }}:${{ env.RELEASE_TAG }}-native
+        cache-from: type=gha,scope=dockerfilenative
+        cache-to: type=gha,mode=max,scope=dockerfilenative
     - name: Image digest
       run: echo ${{ steps.docker_build.outputs.digest }}
