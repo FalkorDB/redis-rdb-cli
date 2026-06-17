@@ -31,20 +31,8 @@ jobs:
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
           push: false
-<<<<<<< HEAD
-          tags: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.REPO }}:latest
-      - name: Build docker latest-native
-        id: latest-native
-        uses: docker/build-push-action@v4
-        with:
-          context: ./
-          file: ./DockerfileNative
-          push: false
-          tags: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.REPO }}:latest-native
-=======
           tags: |
-            ${{ secrets.DOCKER_USER }}/${{ secrets.REPO }}:latest
-            ${{ secrets.DOCKER_USER }}/${{ secrets.REPO }}:${{ env.RELEASE_TAG }}
->>>>>>> origin/master
+            ${{ secrets.DOCKER_USERNAME }}/${{ secrets.REPO }}:latest
+            ${{ secrets.DOCKER_USERNAME }}/${{ secrets.REPO }}:${{ env.RELEASE_TAG }}
       - name: Image digest
         run: echo ${{ steps.latest.outputs.digest }}
