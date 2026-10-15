@@ -34,6 +34,7 @@ public enum DataType {
     STRING("string"),
     MODULE("module"),
     STREAM("stream"),
+    ARRAY("array"),
     TTLHASH("ttlhash"),
     SORTEDSET("sortedset");
     
@@ -75,6 +76,8 @@ public enum DataType {
                 return MODULE;
             case "stream":
                 return STREAM;
+            case "array":
+                return ARRAY;
             case "ttlhash":
                 return TTLHASH;
             case "sortedset":
@@ -97,6 +100,10 @@ public enum DataType {
             case 9:
             case 13:
             case 16:
+            case 29:
+            case 30:
+            case 31:
+            case 32:
                 return HASH;
             case 1:
             case 10:
@@ -114,7 +121,11 @@ public enum DataType {
             case 15:
             case 19:
             case 21:
+            case 26:
+            case 27:
                 return STREAM;
+            case 28:
+                return ARRAY;
             case 24: 
             case 25:
                 return TTLHASH;
@@ -132,7 +143,7 @@ public enum DataType {
             case SET:
                 return type == 2 || type == 11 || type == 20;
             case HASH:
-                return type == 4 || type == 9 || type == 13 || type == 16;
+                return type == 4 || type == 9 || type == 13 || type == 16 || (type >= 29 && type <= 32);
             case LIST:
                 return type == 1 || type == 10 || type == 14 || type == 18;
             case SORTEDSET:
@@ -140,7 +151,9 @@ public enum DataType {
             case MODULE:
                 return type == 6 || type == 7;
             case STREAM:
-                return type == 15 || type == 19 || type == 21;
+                return type == 15 || type == 19 || type == 21 || type == 26 || type == 27;
+            case ARRAY:
+                return type == 28;
             case TTLHASH:
                 return type == 24 || type == 25;
         }
@@ -195,6 +208,20 @@ public enum DataType {
                 return "hashmetadata";
             case 25:
                 return "hashlistpackex";
+            case 26:
+                return "listpacks4";
+            case 27:
+                return "listpacks5";
+            case 28:
+                return "array";
+            case 29:
+                return "templatelistpack";
+            case 30:
+                return "templatelistpackref";
+            case 31:
+                return "templatearray";
+            case 32:
+                return "templatearrayref";
             default:
                 throw new AssertionError("Unsupported data storage type '" + type + "'");
         }

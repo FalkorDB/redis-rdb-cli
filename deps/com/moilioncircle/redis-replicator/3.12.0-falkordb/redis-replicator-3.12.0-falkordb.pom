@@ -22,7 +22,7 @@
 
     <groupId>com.moilioncircle</groupId>
     <artifactId>redis-replicator</artifactId>
-    <version>3.11.0</version>
+    <version>3.12.0-falkordb</version>
 
     <name>redis-replicator</name>
     <description>
@@ -51,13 +51,18 @@
             </roles>
             <timezone>+8</timezone>
         </developer>
-
+        
         <developer>
             <name>Adrian Yao</name>
             <organization>unstudy</organization>
             <email>adrianyaofly@gmail.com</email>
             <url>https://github.com/adrianyao89</url>
             <timezone>+8</timezone>
+        </developer>
+        
+        <developer>
+            <name>otheng03</name>
+            <url>https://github.com/otheng03</url>
         </developer>
 
         <developer>
@@ -109,7 +114,7 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j2-impl</artifactId>
-            <version>2.25.2</version>
+            <version>2.25.3</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -121,13 +126,13 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>2.25.2</version>
+            <version>2.25.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
-            <version>6.2.0</version>
+            <version>7.2.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -140,7 +145,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-jar-plugin</artifactId>
-                        <version>3.4.2</version>
+                        <version>3.5.0</version>
                         <configuration>
                             <archive combine.children="append">
                                 <manifestEntries>
@@ -183,7 +188,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-resources-plugin</artifactId>
-                        <version>3.3.1</version>
+                        <version>3.4.0</version>
                         <configuration>
                             <encoding>${project.build.sourceEncoding}</encoding>
                         </configuration>
@@ -212,7 +217,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>3.3.1</version>
+                        <version>3.4.0</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -273,7 +278,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-jar-plugin</artifactId>
-                        <version>3.4.2</version>
+                        <version>3.5.0</version>
                         <configuration>
                             <archive combine.children="append">
                                 <manifestEntries>
@@ -316,7 +321,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-resources-plugin</artifactId>
-                        <version>3.3.1</version>
+                        <version>3.4.0</version>
                         <configuration>
                             <encoding>${project.build.sourceEncoding}</encoding>
                         </configuration>
@@ -345,7 +350,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>3.3.1</version>
+                        <version>3.4.0</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -364,7 +369,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.4.2</version>
+                <version>3.5.0</version>
                 <configuration>
                     <archive combine.children="append">
                         <manifestEntries>
@@ -422,6 +427,16 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- Run tests on the classpath instead of the module path so JUnit
+                         can reflect on @Rule fields without requiring `opens` directives
+                         in module-info.java. -->
+                    <useModulePath>false</useModulePath>
+                </configuration>
             </plugin>
         </plugins>
     </build>

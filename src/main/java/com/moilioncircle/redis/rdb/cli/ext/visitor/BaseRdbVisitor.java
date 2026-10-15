@@ -19,11 +19,16 @@ package com.moilioncircle.redis.rdb.cli.ext.visitor;
 import static com.moilioncircle.redis.rdb.cli.glossary.Guard.DRAIN;
 import static com.moilioncircle.redis.rdb.cli.glossary.Guard.PASS;
 import static com.moilioncircle.redis.rdb.cli.glossary.Guard.SAVE;
+import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_ARRAY;
 import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH;
 import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH_LISTPACK;
 import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH_LISTPACK_EX;
 import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH_METADATA;
 import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH_ZIPLIST;
+import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH_TMPL_ARRAY;
+import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH_TMPL_ARRAY_REF;
+import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH_TMPL_LP;
+import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH_TMPL_LP_REF;
 import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH_ZIPMAP;
 import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_LIST;
 import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_LIST_QUICKLIST;
@@ -37,6 +42,8 @@ import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_SET_LISTPACK
 import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_STREAM_LISTPACKS;
 import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_STREAM_LISTPACKS_2;
 import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_STREAM_LISTPACKS_3;
+import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_STREAM_LISTPACKS_4;
+import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_STREAM_LISTPACKS_5;
 import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_STRING;
 import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_ZSET;
 import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_ZSET_2;
@@ -522,6 +529,160 @@ public abstract class BaseRdbVisitor extends DefaultRdbVisitor {
 		}
 	}
 	
+@Override
+	public Event applyStreamListPacks4(RedisInputStream in, int version, ContextKeyValuePair context) throws IOException {
+		try {
+			BaseRdbParser parser = new BaseRdbParser(in);
+			byte[] key = parser.rdbLoadEncodedStringObject().first();
+			boolean contains = filter.contains(context.getDb().getDbNumber(), RDB_TYPE_STREAM_LISTPACKS_4, Strings.toString(key), context.getExpiredType() != ExpiredType.NONE);
+			if (contains) {
+				if (listener != null) listener.setGuard(DRAIN);
+				return doApplyStreamListPacks4(in, version, key, RDB_TYPE_STREAM_LISTPACKS_4, context);
+			} else {
+				if (listener != null) listener.setGuard(PASS);
+				valueVisitor.applyStreamListPacks4(in, version);
+				return context.valueOf(new DummyKeyValuePair());
+			}
+		} finally {
+			if (listener != null) listener.setGuard(SAVE);
+		}
+	}
+	
+	@Override
+	public Event applyStreamListPacks5(RedisInputStream in, int version, ContextKeyValuePair context) throws IOException {
+		try {
+			BaseRdbParser parser = new BaseRdbParser(in);
+			byte[] key = parser.rdbLoadEncodedStringObject().first();
+			boolean contains = filter.contains(context.getDb().getDbNumber(), RDB_TYPE_STREAM_LISTPACKS_5, Strings.toString(key), context.getExpiredType() != ExpiredType.NONE);
+			if (contains) {
+				if (listener != null) listener.setGuard(DRAIN);
+				return doApplyStreamListPacks5(in, version, key, RDB_TYPE_STREAM_LISTPACKS_5, context);
+			} else {
+				if (listener != null) listener.setGuard(PASS);
+				valueVisitor.applyStreamListPacks5(in, version);
+				return context.valueOf(new DummyKeyValuePair());
+			}
+		} finally {
+			if (listener != null) listener.setGuard(SAVE);
+		}
+	}
+	
+	@Override
+	public Event applyArray(RedisInputStream in, int version, ContextKeyValuePair context) throws IOException {
+		try {
+			BaseRdbParser parser = new BaseRdbParser(in);
+			byte[] key = parser.rdbLoadEncodedStringObject().first();
+			boolean contains = filter.contains(context.getDb().getDbNumber(), RDB_TYPE_ARRAY, Strings.toString(key), context.getExpiredType() != ExpiredType.NONE);
+			if (contains) {
+				if (listener != null) listener.setGuard(DRAIN);
+				return doApplyArray(in, version, key, RDB_TYPE_ARRAY, context);
+			} else {
+				if (listener != null) listener.setGuard(PASS);
+				valueVisitor.applyArray(in, version);
+				return context.valueOf(new DummyKeyValuePair());
+			}
+		} finally {
+			if (listener != null) listener.setGuard(SAVE);
+		}
+	}
+	
+	@Override
+	public Event applyHashTemplateListPack(RedisInputStream in, int version, ContextKeyValuePair context) throws IOException {
+		try {
+			BaseRdbParser parser = new BaseRdbParser(in);
+			byte[] key = parser.rdbLoadEncodedStringObject().first();
+			boolean contains = filter.contains(context.getDb().getDbNumber(), RDB_TYPE_HASH_TMPL_LP, Strings.toString(key), context.getExpiredType() != ExpiredType.NONE);
+			if (contains) {
+				if (listener != null) listener.setGuard(DRAIN);
+				return doApplyHashTemplateListPack(in, version, key, RDB_TYPE_HASH_TMPL_LP, context);
+			} else {
+				if (listener != null) listener.setGuard(PASS);
+				valueVisitor.applyHashTemplateListPack(in, version);
+				return context.valueOf(new DummyKeyValuePair());
+			}
+		} finally {
+			if (listener != null) listener.setGuard(SAVE);
+		}
+	}
+	
+	@Override
+	public Event applyHashTemplateListPackRef(RedisInputStream in, int version, ContextKeyValuePair context) throws IOException {
+		try {
+			BaseRdbParser parser = new BaseRdbParser(in);
+			byte[] key = parser.rdbLoadEncodedStringObject().first();
+			boolean contains = filter.contains(context.getDb().getDbNumber(), RDB_TYPE_HASH_TMPL_LP_REF, Strings.toString(key), context.getExpiredType() != ExpiredType.NONE);
+			if (contains) {
+				if (listener != null) listener.setGuard(DRAIN);
+				return doApplyHashTemplateListPackRef(in, version, key, RDB_TYPE_HASH_TMPL_LP_REF, context);
+			} else {
+				if (listener != null) listener.setGuard(PASS);
+				valueVisitor.applyHashTemplateListPackRef(in, version);
+				return context.valueOf(new DummyKeyValuePair());
+			}
+		} finally {
+			if (listener != null) listener.setGuard(SAVE);
+		}
+	}
+	
+	@Override
+	public Event applyHashTemplateArray(RedisInputStream in, int version, ContextKeyValuePair context) throws IOException {
+		try {
+			BaseRdbParser parser = new BaseRdbParser(in);
+			byte[] key = parser.rdbLoadEncodedStringObject().first();
+			boolean contains = filter.contains(context.getDb().getDbNumber(), RDB_TYPE_HASH_TMPL_ARRAY, Strings.toString(key), context.getExpiredType() != ExpiredType.NONE);
+			if (contains) {
+				if (listener != null) listener.setGuard(DRAIN);
+				return doApplyHashTemplateArray(in, version, key, RDB_TYPE_HASH_TMPL_ARRAY, context);
+			} else {
+				if (listener != null) listener.setGuard(PASS);
+				valueVisitor.applyHashTemplateArray(in, version);
+				return context.valueOf(new DummyKeyValuePair());
+			}
+		} finally {
+			if (listener != null) listener.setGuard(SAVE);
+		}
+	}
+	
+	@Override
+	public Event applyHashTemplateArrayRef(RedisInputStream in, int version, ContextKeyValuePair context) throws IOException {
+		try {
+			BaseRdbParser parser = new BaseRdbParser(in);
+			byte[] key = parser.rdbLoadEncodedStringObject().first();
+			boolean contains = filter.contains(context.getDb().getDbNumber(), RDB_TYPE_HASH_TMPL_ARRAY_REF, Strings.toString(key), context.getExpiredType() != ExpiredType.NONE);
+			if (contains) {
+				if (listener != null) listener.setGuard(DRAIN);
+				return doApplyHashTemplateArrayRef(in, version, key, RDB_TYPE_HASH_TMPL_ARRAY_REF, context);
+			} else {
+				if (listener != null) listener.setGuard(PASS);
+				valueVisitor.applyHashTemplateArrayRef(in, version);
+				return context.valueOf(new DummyKeyValuePair());
+			}
+		} finally {
+			if (listener != null) listener.setGuard(SAVE);
+		}
+	}
+	
+	@Override
+	public Event applyHashTemplate(RedisInputStream in, int version) throws IOException {
+		// REF-encoded hashes need the template, so it is registered with this visitor's value visitor
+		// and always written, like the aux fields
+		if (listener != null) listener.setGuard(DRAIN);
+		try {
+			valueVisitor.applyHashTemplate(in, version);
+			return null;
+		} finally {
+			if (listener != null) listener.setGuard(SAVE);
+		}
+	}
+	
+	@Override
+	public Event applyKeyMeta(RedisInputStream in, int version, ContextKeyValuePair context) throws IOException {
+		// module key metadata is part of the key, so it is kept or dropped with it
+		valueVisitor.applyKeyMeta(in, version);
+		context.setValueRdbType(applyType(in));
+		return rdbLoadObject(in, version, context);
+	}
+	
 	protected Event doApplyString(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
 		valueVisitor.applyString(in, version);
 		return context.valueOf(new DummyKeyValuePair());
@@ -634,6 +795,41 @@ public abstract class BaseRdbVisitor extends DefaultRdbVisitor {
 	
 	protected Event doApplyStreamListPacks3(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
 		valueVisitor.applyStreamListPacks3(in, version);
+		return context.valueOf(new DummyKeyValuePair());
+	}
+	
+	protected Event doApplyStreamListPacks4(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		valueVisitor.applyStreamListPacks4(in, version);
+		return context.valueOf(new DummyKeyValuePair());
+	}
+	
+	protected Event doApplyStreamListPacks5(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		valueVisitor.applyStreamListPacks5(in, version);
+		return context.valueOf(new DummyKeyValuePair());
+	}
+	
+	protected Event doApplyArray(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		valueVisitor.applyArray(in, version);
+		return context.valueOf(new DummyKeyValuePair());
+	}
+	
+	protected Event doApplyHashTemplateListPack(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		valueVisitor.applyHashTemplateListPack(in, version);
+		return context.valueOf(new DummyKeyValuePair());
+	}
+	
+	protected Event doApplyHashTemplateListPackRef(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		valueVisitor.applyHashTemplateListPackRef(in, version);
+		return context.valueOf(new DummyKeyValuePair());
+	}
+	
+	protected Event doApplyHashTemplateArray(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		valueVisitor.applyHashTemplateArray(in, version);
+		return context.valueOf(new DummyKeyValuePair());
+	}
+	
+	protected Event doApplyHashTemplateArrayRef(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		valueVisitor.applyHashTemplateArrayRef(in, version);
 		return context.valueOf(new DummyKeyValuePair());
 	}
 }

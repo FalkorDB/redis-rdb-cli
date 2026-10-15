@@ -30,6 +30,7 @@ import com.moilioncircle.redis.replicator.Replicator;
 import com.moilioncircle.redis.replicator.event.Event;
 import com.moilioncircle.redis.replicator.io.RedisInputStream;
 import com.moilioncircle.redis.replicator.rdb.datatype.ContextKeyValuePair;
+import com.moilioncircle.redis.replicator.rdb.DefaultRdbValueVisitor;
 import com.moilioncircle.redis.replicator.rdb.dump.DumpRdbValueVisitor;
 import com.moilioncircle.redis.replicator.rdb.dump.datatype.DumpFunction;
 import com.moilioncircle.redis.replicator.rdb.dump.datatype.DumpKeyValuePair;
@@ -51,7 +52,10 @@ public abstract class AbstractRmtRdbVisitor extends BaseRdbVisitor {
 		this.flush = configure.isMigrateFlush();
 		this.manager = new MonitorManager(configure);
 		this.manager.open(ENDPOINT_MEASUREMENTS);
-		this.valueVisitor = new DumpRdbValueVisitor(replicator, configure.getDumpRdbVersion(), configure.getOutputBufferSize());
+		DumpRdbValueVisitor dump = new DumpRdbValueVisitor(replicator, configure.getDumpRdbVersion(), configure.getOutputBufferSize());
+		// BaseRdbVisitor reads the hash templates, and skips filtered out keys, with its own value visitor
+		dump.setHashTemplates(((DefaultRdbValueVisitor) super.valueVisitor).getHashTemplates());
+		this.valueVisitor = dump;
 	}
 	
 	@Override
@@ -247,6 +251,62 @@ public abstract class AbstractRmtRdbVisitor extends BaseRdbVisitor {
 		DumpKeyValuePair dump = new DumpKeyValuePair();
 		dump.setKey(key);
 		dump.setValue(valueVisitor.applyStreamListPacks3(in, version));
+		return context.valueOf(dump);
+	}
+	
+	@Override
+	protected Event doApplyStreamListPacks4(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		DumpKeyValuePair dump = new DumpKeyValuePair();
+		dump.setKey(key);
+		dump.setValue(valueVisitor.applyStreamListPacks4(in, version));
+		return context.valueOf(dump);
+	}
+	
+	@Override
+	protected Event doApplyStreamListPacks5(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		DumpKeyValuePair dump = new DumpKeyValuePair();
+		dump.setKey(key);
+		dump.setValue(valueVisitor.applyStreamListPacks5(in, version));
+		return context.valueOf(dump);
+	}
+	
+	@Override
+	protected Event doApplyArray(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		DumpKeyValuePair dump = new DumpKeyValuePair();
+		dump.setKey(key);
+		dump.setValue(valueVisitor.applyArray(in, version));
+		return context.valueOf(dump);
+	}
+	
+	@Override
+	protected Event doApplyHashTemplateListPack(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		DumpKeyValuePair dump = new DumpKeyValuePair();
+		dump.setKey(key);
+		dump.setValue(valueVisitor.applyHashTemplateListPack(in, version));
+		return context.valueOf(dump);
+	}
+	
+	@Override
+	protected Event doApplyHashTemplateListPackRef(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		DumpKeyValuePair dump = new DumpKeyValuePair();
+		dump.setKey(key);
+		dump.setValue(valueVisitor.applyHashTemplateListPackRef(in, version));
+		return context.valueOf(dump);
+	}
+	
+	@Override
+	protected Event doApplyHashTemplateArray(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		DumpKeyValuePair dump = new DumpKeyValuePair();
+		dump.setKey(key);
+		dump.setValue(valueVisitor.applyHashTemplateArray(in, version));
+		return context.valueOf(dump);
+	}
+	
+	@Override
+	protected Event doApplyHashTemplateArrayRef(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		DumpKeyValuePair dump = new DumpKeyValuePair();
+		dump.setKey(key);
+		dump.setValue(valueVisitor.applyHashTemplateArrayRef(in, version));
 		return context.valueOf(dump);
 	}
 }

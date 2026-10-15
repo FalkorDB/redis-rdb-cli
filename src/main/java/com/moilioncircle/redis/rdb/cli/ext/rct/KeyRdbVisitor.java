@@ -21,6 +21,7 @@ import java.io.IOException;
 import com.moilioncircle.redis.rdb.cli.api.format.escape.Escaper;
 import com.moilioncircle.redis.rdb.cli.cmd.Args;
 import com.moilioncircle.redis.rdb.cli.conf.Configure;
+import com.moilioncircle.redis.rdb.cli.ext.datatype.DummyKeyValuePair;
 import com.moilioncircle.redis.rdb.cli.util.Outputs;
 import com.moilioncircle.redis.replicator.Replicator;
 import com.moilioncircle.redis.replicator.event.Event;
@@ -195,5 +196,61 @@ public class KeyRdbVisitor extends AbstractRctRdbVisitor {
         quote(key, out);
         Outputs.write('\n', out);
         return super.doApplyStreamListPacks3(in, version, key, type, context);
+    }
+    
+    @Override
+    public Event doApplyStreamListPacks4(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+        quote(key, out);
+        Outputs.write('\n', out);
+        valueVisitor.applyStreamListPacks4(in, version);
+        return context.valueOf(new DummyKeyValuePair());
+    }
+    
+    @Override
+    public Event doApplyStreamListPacks5(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+        quote(key, out);
+        Outputs.write('\n', out);
+        valueVisitor.applyStreamListPacks5(in, version);
+        return context.valueOf(new DummyKeyValuePair());
+    }
+    
+    @Override
+    public Event doApplyArray(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+        quote(key, out);
+        Outputs.write('\n', out);
+        valueVisitor.applyArray(in, version);
+        return context.valueOf(new DummyKeyValuePair());
+    }
+    
+    @Override
+    public Event doApplyHashTemplateListPack(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+        quote(key, out);
+        Outputs.write('\n', out);
+        valueVisitor.applyHashTemplateListPack(in, version);
+        return context.valueOf(new DummyKeyValuePair());
+    }
+    
+    @Override
+    public Event doApplyHashTemplateListPackRef(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+        quote(key, out);
+        Outputs.write('\n', out);
+        valueVisitor.applyHashTemplateListPackRef(in, version);
+        return context.valueOf(new DummyKeyValuePair());
+    }
+    
+    @Override
+    public Event doApplyHashTemplateArray(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+        quote(key, out);
+        Outputs.write('\n', out);
+        valueVisitor.applyHashTemplateArray(in, version);
+        return context.valueOf(new DummyKeyValuePair());
+    }
+    
+    @Override
+    public Event doApplyHashTemplateArrayRef(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+        quote(key, out);
+        Outputs.write('\n', out);
+        valueVisitor.applyHashTemplateArrayRef(in, version);
+        return context.valueOf(new DummyKeyValuePair());
     }
 }
