@@ -2,6 +2,7 @@ package com.moilioncircle.redis.rdb.cli.ext;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 
@@ -222,7 +223,11 @@ public class TestCases {
         eq0(dump, "stream.count");
 
         // template ids of different rdb files collide
-        assertNotEquals(0, new CommandLine(new XRdt()).execute(new String[]{"-m", dump, dump, "-o", target(dump, "merge.rdb")}));
+        File merged = new File(target(dump, "merge.rdb"));
+        merged.delete();
+        assertNotEquals(0, new CommandLine(new XRdt()).execute(new String[]{"-m", dump, dump, "-o", merged.getPath()}));
+        // refused before the output is opened
+        assertFalse(merged.exists());
     }
 
     @Test

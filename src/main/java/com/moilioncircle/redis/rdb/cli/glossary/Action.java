@@ -18,6 +18,10 @@ package com.moilioncircle.redis.rdb.cli.glossary;
 
 import static com.moilioncircle.redis.rdb.cli.util.Collections.isEmpty;
 import static com.moilioncircle.redis.replicator.FileType.RDB;
+import static com.moilioncircle.redis.replicator.Constants.RDB_OPCODE_AUX;
+import static com.moilioncircle.redis.replicator.Constants.RDB_OPCODE_FUNCTION2;
+import static com.moilioncircle.redis.replicator.Constants.RDB_OPCODE_HASH_TEMPLATE;
+import static com.moilioncircle.redis.replicator.Constants.RDB_OPCODE_MODULE_AUX;
 
 import java.io.EOFException;
 import java.io.File;
@@ -44,6 +48,7 @@ import com.moilioncircle.redis.replicator.RedisURI;
 import com.moilioncircle.redis.replicator.Replicator;
 import com.moilioncircle.redis.replicator.io.CRCOutputStream;
 import com.moilioncircle.redis.replicator.io.RedisInputStream;
+import com.moilioncircle.redis.replicator.rdb.skip.SkipRdbParser;
 import com.moilioncircle.redis.replicator.rdb.BaseRdbEncoder;
 import com.moilioncircle.redis.replicator.rdb.BaseRdbParser;
 import com.moilioncircle.redis.replicator.util.ByteArray;
@@ -64,6 +69,14 @@ public enum Action {
         switch (this) {
             case MERGE:
                 if (isEmpty(arg.merge)) return list;
+                if (arg.merge.size() > 1) {
+                    // checked before the output is opened, so a refused merge leaves no partial file
+                    for (File file : arg.merge) {
+                        if (hasHashTemplates(file)) {
+                            throw new UnsupportedOperationException(MergeRdbVisitor.HASH_TEMPLATES_ERROR);
+                        }
+                    }
+                }
                 CRCOutputStream out = Outputs.newCRCOutput(arg.output, configure.getOutputBufferSize());
                 int version = 0;
                 long totalUsedMem = 0;
@@ -129,6 +142,35 @@ public enum Action {
         } catch (Exception ignore) {
         }
         return 0L;
+    }
+    
+    /**
+     * Whether the rdb file has hash templates (redis 8.10+). Redis writes them after the aux fields,
+     * module aux data and functions, and before the first database.
+     */
+    private boolean hasHashTemplates(File file) throws IOException {
+        try (RedisInputStream in = new RedisInputStream(new FileInputStream(file))) {
+            in.skip(9); // skip "REDIS" magic (5 bytes) + version (4 bytes)
+            SkipRdbParser parser = new SkipRdbParser(in);
+            while (true) {
+                int opcode = in.read();
+                if (opcode == RDB_OPCODE_HASH_TEMPLATE) {
+                    return true;
+                } else if (opcode == RDB_OPCODE_AUX) {
+                    parser.rdbLoadEncodedStringObject();
+                    parser.rdbLoadEncodedStringObject();
+                } else if (opcode == RDB_OPCODE_MODULE_AUX) {
+                    parser.rdbLoadLen(); // module id
+                    parser.rdbLoadCheckModuleValue();
+                } else if (opcode == RDB_OPCODE_FUNCTION2) {
+                    parser.rdbGenericLoadStringObject();
+                } else {
+                    return false;
+                }
+            }
+        } catch (EOFException e) {
+            return false;
+        }
     }
     
     private void writeUsedMemAux(OutputStream out, long usedMem) throws IOException {
