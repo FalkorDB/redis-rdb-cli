@@ -20,6 +20,11 @@ import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_STREAM_LISTP
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.moilioncircle.redis.rdb.cli.api.format.escape.Escaper;
 import com.moilioncircle.redis.rdb.cli.cmd.Args;
@@ -40,7 +45,10 @@ import com.moilioncircle.redis.replicator.rdb.skip.SkipRdbParser;
  */
 public abstract class AbstractRctRdbVisitor extends BaseRdbVisitor {
 	
+	private static final Logger logger = LoggerFactory.getLogger(AbstractRctRdbVisitor.class);
+	
 	protected Escaper escaper;
+	private final Set<Integer> unsupported = new HashSet<>();
 	protected OutputStream out;
 	
 	public AbstractRctRdbVisitor(Replicator replicator, Configure configure, Args.RctArgs args, Escaper escaper) {
@@ -202,5 +210,58 @@ public abstract class AbstractRctRdbVisitor extends BaseRdbVisitor {
 		}
 		if (version < 11) context.setValueRdbType(RDB_TYPE_STREAM_LISTPACKS);
 		return context.valueOf(new DummyKeyValuePair());
+	}
+	
+	/**
+	 * Skip a key whose rdb type this format doesn't write yet, and log it once per type.
+	 */
+	protected Event skipUnsupported(int type, ContextKeyValuePair context) {
+		if (unsupported.add(type)) {
+			logger.warn("rct doesn't support rdb type {} yet, skipping these keys", type);
+			System.err.println("rct doesn't support rdb type " + type + " yet, skipping these keys");
+		}
+		return context.valueOf(new DummyKeyValuePair());
+	}
+	
+	@Override
+	protected Event doApplyStreamListPacks4(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		valueVisitor.applyStreamListPacks4(in, version);
+		return skipUnsupported(type, context);
+	}
+	
+	@Override
+	protected Event doApplyStreamListPacks5(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		valueVisitor.applyStreamListPacks5(in, version);
+		return skipUnsupported(type, context);
+	}
+	
+	@Override
+	protected Event doApplyArray(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		valueVisitor.applyArray(in, version);
+		return skipUnsupported(type, context);
+	}
+	
+	@Override
+	protected Event doApplyHashTemplateListPack(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		valueVisitor.applyHashTemplateListPack(in, version);
+		return skipUnsupported(type, context);
+	}
+	
+	@Override
+	protected Event doApplyHashTemplateListPackRef(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		valueVisitor.applyHashTemplateListPackRef(in, version);
+		return skipUnsupported(type, context);
+	}
+	
+	@Override
+	protected Event doApplyHashTemplateArray(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		valueVisitor.applyHashTemplateArray(in, version);
+		return skipUnsupported(type, context);
+	}
+	
+	@Override
+	protected Event doApplyHashTemplateArrayRef(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		valueVisitor.applyHashTemplateArrayRef(in, version);
+		return skipUnsupported(type, context);
 	}
 }

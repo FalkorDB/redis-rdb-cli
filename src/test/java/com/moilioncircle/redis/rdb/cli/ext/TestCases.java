@@ -1,6 +1,9 @@
 package com.moilioncircle.redis.rdb.cli.ext;
 
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -197,6 +200,36 @@ public class TestCases {
         }
     }
     
+    /**
+     * dump-v15.rdb is written by redis 8.10 (rdb version 15). see gen-dump-v15.sh in FalkorDB/redis-replicator.
+     */
+    @Test
+    public void testV15() throws Exception {
+        String dump = path("v15/dump-v15.rdb");
+        new CommandLine(new XRct()).execute(new String[]{"-f", "count", "-s", dump, "-o", target(dump, "count", ACTUAL_SUFFIX)});
+        new CommandLine(new XRct()).execute(new String[]{"-f", "key", "-s", dump, "-o", target(dump, "key", ACTUAL_SUFFIX)});
+        eq0(dump, "count");
+        eq0(dump, "key");
+
+        // hash templates are kept when the keys around them are filtered out
+        String hashes = target(dump, "hash.rdb");
+        assertEquals(0, new CommandLine(new XRdt()).execute(new String[]{"-b", dump, "-t", "hash", "-o", hashes}));
+        new CommandLine(new XRct()).execute(new String[]{"-f", "count", "-s", hashes, "-o", target(dump, "hash.count", ACTUAL_SUFFIX)});
+        eq0(dump, "hash.count");
+
+        String streams = target(dump, "stream.rdb");
+        assertEquals(0, new CommandLine(new XRdt()).execute(new String[]{"-b", dump, "-t", "stream", "array", "-o", streams}));
+        new CommandLine(new XRct()).execute(new String[]{"-f", "count", "-s", streams, "-o", target(dump, "stream.count", ACTUAL_SUFFIX)});
+        eq0(dump, "stream.count");
+
+        // template ids of different rdb files collide
+        File merged = new File(target(dump, "merge.rdb"));
+        merged.delete();
+        assertNotEquals(0, new CommandLine(new XRdt()).execute(new String[]{"-m", dump, dump, "-o", merged.getPath()}));
+        // refused before the output is opened
+        assertFalse(merged.exists());
+    }
+
     @Test
     public void testRmt() throws Exception {
         String rmt = "rmt";

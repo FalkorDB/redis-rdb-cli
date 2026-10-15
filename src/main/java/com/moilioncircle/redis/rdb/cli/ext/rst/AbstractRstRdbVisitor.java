@@ -20,6 +20,9 @@ import static com.moilioncircle.redis.rdb.cli.glossary.Measures.ENDPOINT_MEASURE
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.moilioncircle.redis.rdb.cli.api.format.escape.Escaper;
 import com.moilioncircle.redis.rdb.cli.conf.Configure;
 import com.moilioncircle.redis.rdb.cli.ext.escape.RawEscaper;
@@ -30,6 +33,7 @@ import com.moilioncircle.redis.replicator.Replicator;
 import com.moilioncircle.redis.replicator.event.Event;
 import com.moilioncircle.redis.replicator.io.RedisInputStream;
 import com.moilioncircle.redis.replicator.rdb.datatype.ContextKeyValuePair;
+import com.moilioncircle.redis.replicator.rdb.DefaultRdbValueVisitor;
 import com.moilioncircle.redis.replicator.rdb.dump.DumpRdbValueVisitor;
 import com.moilioncircle.redis.replicator.rdb.dump.datatype.DumpFunction;
 import com.moilioncircle.redis.replicator.rdb.dump.datatype.DumpKeyValuePair;
@@ -39,11 +43,14 @@ import com.moilioncircle.redis.replicator.rdb.dump.datatype.DumpKeyValuePair;
  */
 public abstract class AbstractRstRdbVisitor extends BaseRdbVisitor {
 	
+	private static final Logger logger = LoggerFactory.getLogger(AbstractRstRdbVisitor.class);
+	
 	protected final boolean flush;
 	protected final boolean replace;
 	protected final MonitorManager manager;
 	protected final Escaper raw = new RawEscaper();
 	protected final DumpRdbValueVisitor valueVisitor;
+	private boolean keyMetaWarned;
 	
 	public AbstractRstRdbVisitor(Replicator replicator, Configure configure, Filter filter, boolean replace) {
 		super(replicator, configure, filter);
@@ -51,7 +58,20 @@ public abstract class AbstractRstRdbVisitor extends BaseRdbVisitor {
 		this.flush = configure.isMigrateFlush();
 		this.manager = new MonitorManager(configure);
 		this.manager.open(ENDPOINT_MEASUREMENTS);
-		this.valueVisitor = new DumpRdbValueVisitor(replicator, configure.getDumpRdbVersion(), configure.getOutputBufferSize());
+		DumpRdbValueVisitor dump = new DumpRdbValueVisitor(replicator, configure.getDumpRdbVersion(), configure.getOutputBufferSize());
+		// BaseRdbVisitor reads the hash templates, and skips filtered out keys, with its own value visitor
+		dump.setHashTemplates(((DefaultRdbValueVisitor) super.valueVisitor).getHashTemplates());
+		this.valueVisitor = dump;
+	}
+	
+	@Override
+	public Event applyKeyMeta(RedisInputStream in, int version, ContextKeyValuePair context) throws IOException {
+		if (!keyMetaWarned) {
+			keyMetaWarned = true;
+			logger.warn("the rdb has module key metadata, which RESTORE payloads don't carry yet: it is dropped");
+			System.err.println("the rdb has module key metadata, which RESTORE payloads don't carry yet: it is dropped");
+		}
+		return super.applyKeyMeta(in, version, context);
 	}
 	
 	@Override
@@ -247,6 +267,62 @@ public abstract class AbstractRstRdbVisitor extends BaseRdbVisitor {
 		DumpKeyValuePair dump = new DumpKeyValuePair();
 		dump.setKey(key);
 		dump.setValue(valueVisitor.applyStreamListPacks3(in, version));
+		return context.valueOf(dump);
+	}
+	
+	@Override
+	protected Event doApplyStreamListPacks4(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		DumpKeyValuePair dump = new DumpKeyValuePair();
+		dump.setKey(key);
+		dump.setValue(valueVisitor.applyStreamListPacks4(in, version));
+		return context.valueOf(dump);
+	}
+	
+	@Override
+	protected Event doApplyStreamListPacks5(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		DumpKeyValuePair dump = new DumpKeyValuePair();
+		dump.setKey(key);
+		dump.setValue(valueVisitor.applyStreamListPacks5(in, version));
+		return context.valueOf(dump);
+	}
+	
+	@Override
+	protected Event doApplyArray(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		DumpKeyValuePair dump = new DumpKeyValuePair();
+		dump.setKey(key);
+		dump.setValue(valueVisitor.applyArray(in, version));
+		return context.valueOf(dump);
+	}
+	
+	@Override
+	protected Event doApplyHashTemplateListPack(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		DumpKeyValuePair dump = new DumpKeyValuePair();
+		dump.setKey(key);
+		dump.setValue(valueVisitor.applyHashTemplateListPack(in, version));
+		return context.valueOf(dump);
+	}
+	
+	@Override
+	protected Event doApplyHashTemplateListPackRef(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		DumpKeyValuePair dump = new DumpKeyValuePair();
+		dump.setKey(key);
+		dump.setValue(valueVisitor.applyHashTemplateListPackRef(in, version));
+		return context.valueOf(dump);
+	}
+	
+	@Override
+	protected Event doApplyHashTemplateArray(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		DumpKeyValuePair dump = new DumpKeyValuePair();
+		dump.setKey(key);
+		dump.setValue(valueVisitor.applyHashTemplateArray(in, version));
+		return context.valueOf(dump);
+	}
+	
+	@Override
+	protected Event doApplyHashTemplateArrayRef(RedisInputStream in, int version, byte[] key, int type, ContextKeyValuePair context) throws IOException {
+		DumpKeyValuePair dump = new DumpKeyValuePair();
+		dump.setKey(key);
+		dump.setValue(valueVisitor.applyHashTemplateArrayRef(in, version));
 		return context.valueOf(dump);
 	}
 }
