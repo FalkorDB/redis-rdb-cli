@@ -1,3 +1,11 @@
+### 0.9.12
+
+Support for redis 8.6, 8.8 and 8.10 (RDB versions 13, 14 and 15), including FalkorDB 4.22.  
+Fix `rmt`, `rst` and `rct` skipping streams written by redis 8.6+.  
+Add the `array` data type to `--type`.  
+`rct` formats other than `count` and `key` skip arrays, template hashes and redis 8.6+ streams for now.  
+`rdt -m` refuses to merge rdb files with hash templates.  
+
 ### 0.9.10
 
 Support for redis 8.4.  

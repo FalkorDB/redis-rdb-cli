@@ -35,8 +35,21 @@ import com.moilioncircle.redis.replicator.rdb.datatype.Slot;
  */
 public class MergeRdbVisitor extends AbstractRdtRdbVisitor {
     
+    private final int files;
+    
     public MergeRdbVisitor(Replicator replicator, Configure configure, Args.RdtArgs arg, Supplier<OutputStream> supplier) {
         super(replicator, configure, arg.filter, supplier);
+        this.files = arg.merge == null ? 1 : arg.merge.size();
+    }
+    
+    @Override
+    public Event applyHashTemplate(RedisInputStream in, int version) throws IOException {
+        // each redis numbers its hash templates from the same small ids, and template-encoded hashes
+        // refer to them by id, so templates from several rdb files would collide
+        if (files > 1) {
+            throw new UnsupportedOperationException("can't merge rdb files with hash templates (redis 8.10+): their template ids collide. migrate them with rmt instead.");
+        }
+        return super.applyHashTemplate(in, version);
     }
     
     @Override

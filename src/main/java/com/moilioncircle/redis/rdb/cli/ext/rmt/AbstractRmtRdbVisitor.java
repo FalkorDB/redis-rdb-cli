@@ -20,6 +20,9 @@ import static com.moilioncircle.redis.rdb.cli.glossary.Measures.ENDPOINT_MEASURE
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.moilioncircle.redis.rdb.cli.api.format.escape.Escaper;
 import com.moilioncircle.redis.rdb.cli.conf.Configure;
 import com.moilioncircle.redis.rdb.cli.ext.escape.RawEscaper;
@@ -40,11 +43,14 @@ import com.moilioncircle.redis.replicator.rdb.dump.datatype.DumpKeyValuePair;
  */
 public abstract class AbstractRmtRdbVisitor extends BaseRdbVisitor {
 	
+	private static final Logger logger = LoggerFactory.getLogger(AbstractRmtRdbVisitor.class);
+	
 	protected final boolean flush;
 	protected final boolean replace;
 	protected final MonitorManager manager;
 	protected final Escaper raw = new RawEscaper();
 	protected final DumpRdbValueVisitor valueVisitor;
+	private boolean keyMetaWarned;
 	
 	public AbstractRmtRdbVisitor(Replicator replicator, Configure configure, Filter filter, boolean replace) {
 		super(replicator, configure, filter);
@@ -56,6 +62,16 @@ public abstract class AbstractRmtRdbVisitor extends BaseRdbVisitor {
 		// BaseRdbVisitor reads the hash templates, and skips filtered out keys, with its own value visitor
 		dump.setHashTemplates(((DefaultRdbValueVisitor) super.valueVisitor).getHashTemplates());
 		this.valueVisitor = dump;
+	}
+	
+	@Override
+	public Event applyKeyMeta(RedisInputStream in, int version, ContextKeyValuePair context) throws IOException {
+		if (!keyMetaWarned) {
+			keyMetaWarned = true;
+			logger.warn("the rdb has module key metadata, which RESTORE payloads don't carry yet: it is dropped");
+			System.err.println("the rdb has module key metadata, which RESTORE payloads don't carry yet: it is dropped");
+		}
+		return super.applyKeyMeta(in, version, context);
 	}
 	
 	@Override
